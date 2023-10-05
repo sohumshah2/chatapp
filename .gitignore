@@ -1,4 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+**/src/server/
+git rm --cached .
 git rm --cached src/server
 
 # dependencies
