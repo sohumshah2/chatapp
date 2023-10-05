@@ -9,12 +9,12 @@ def connect():
     print("Connected to the server")
 
 # Define an event handler for when the client receives a "receiveMessage" event
-@sio.on("receiveMessage")
+@sio.on("broadcastMessage")
 def receive_message(message):
     print(f"Received message from server: {message}")
 
 # Connect to the Socket.io server
-sio.connect("http://localhost:5050")
+sio.connect("https://chatappserver-ucb7.onrender.com/")
 
 # Send a "sendMessage" event to the server
 while True:

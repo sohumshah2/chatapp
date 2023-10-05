@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5050"); // Replace with your server's URL
+// const socket = io("http://localhost:5050"); // Replace with your server's URL
+const socket = io("https://chatappserver-ucb7.onrender.com/", {
+  transports: ["websocket"],
+});
 
 function App() {
   const [messages, setMessages] = useState([]);
