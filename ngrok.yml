@@ -1,0 +1,13 @@
+version: 2
+tunnels:
+  app_backend:
+    proto: http
+    addr: 5050 # Replace with the port your backend server is running on
+    # schemes:
+    #   - http
+  app_frontend:
+    proto: http
+    addr: 3000 # Replace with the port your frontend server is running on
+    # schemes:
+    # - http
+authtoken: fNyqejBNfYpNtdBPqiNe_2aa325U1n9irrWHcchbry

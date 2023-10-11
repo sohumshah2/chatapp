@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 src/server/
+.env
+src/expose
 
 # dependencies
 /node_modules

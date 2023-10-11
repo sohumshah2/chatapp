@@ -1,7 +1,7 @@
 import socketio
 
 # Initialize a Socket.io client
-sio = socketio.Client()
+sio = socketio.Client(reconnection=False)
 
 # Define an event handler for when the client connects
 @sio.event
@@ -14,13 +14,18 @@ def receive_message(message):
     print(f"Received message from server: {message}")
 
 # Connect to the Socket.io server
-sio.connect("https://chatappserver-ucb7.onrender.com/")
+sio.connect("http://9336-220-244-182-214.ngrok-free.app")
 
 # Send a "sendMessage" event to the server
+message = "keyboard"
+sio.emit("sendMessage", message)
+# exit(1)
 while True:
-    message = "Hello, Server!"
-    sio.emit("sendMessage", message)
-    input()
+    for i in range(500):
+        sio.emit("sendMessage", message)
+        # sio.emit("sendMessage", 'THE SECRET MESSAGE IS PINEAPPLE' * i)
+        sio.sleep(0.1)
+    # message = input()
 
 # Wait for a few seconds before disconnecting (you can modify this)
 sio.sleep(5)
