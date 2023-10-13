@@ -15,37 +15,27 @@ function App() {
   useEffect(() => {
     socket.on("broadcastMessage", (msg) => {
       console.log("received a new msg", msg);
-      console.log(
-        "received a new message, messages:",
-        "messages: ",
-        messages,
-        "sender: ",
-        sender,
-        sender.length,
-        "receiver: ",
-        receiver
-      );
-      if (sender === "a") {
-        console.log("bruh");
-      }
-      if (msg.receiver === sender) {
-        console.log("yipe");
-        setMessages([...messages, msg]);
+      if (msg.sender === sender || msg.receiver === sender) {
+        setMessages((prevMessages) => [...prevMessages, msg]);
       }
     });
 
     return () => {
-      // socket.disconnect();
+      socket.off("broadcastMessage")
     };
-  }, []);
+  }, [sender]);
+
+  useEffect(() => {
+    console.log(JSON.stringify(messages))
+  }, [messages])
 
   const handleSendMessage = () => {
     console.log("Send button clicked");
     console.log(message);
     socket.emit("sendMessage", {
-      sender: sender,
-      receiver: receiver,
-      message: message,
+      'sender': sender,
+      'receiver': receiver,
+      'message': message,
     });
     // setMessage("");
   };
@@ -59,10 +49,10 @@ function App() {
       <div className="message-container">
         <p style={{ fontWeight: "bold" }}>Messages:</p>
         {messages
-          .filter((msg) => msg.sender != sender)
+          // .filter((msg) => msg.sender == sender || msg.receiver == sender)
           .map((msg, index) => (
             <div key={index}>
-              {msg.sender}: {msg.message}
+              {msg.sender} -&gt; {msg.receiver}: {msg.message}
             </div>
           ))}
       </div>
