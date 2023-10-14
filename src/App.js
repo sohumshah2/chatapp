@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 
-const socket = io("localhost:5050"); // Replace with your server's URL
+const socket = io("https://chatappserver-ucb7.onrender.com"); // Replace with your server's URL
 // const socket = io("http://server.sharedwithexpose.com/", {
 //   transports: ["websocket"],
 // });
@@ -44,7 +44,7 @@ function App() {
     <div className="App">
       <h1>Chat App</h1>
       <p>
-        for debugging - sender: {sender}, receiver: {receiver}
+        {/* for debugging - sender: {sender}, receiver: {receiver} */}
       </p>
       <div className="message-container">
         <p style={{ fontWeight: "bold" }}>Messages:</p>
