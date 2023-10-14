@@ -3,6 +3,7 @@
 chatappserver/
 .env
 src/expose
+expose
 
 # dependencies
 /node_modules
