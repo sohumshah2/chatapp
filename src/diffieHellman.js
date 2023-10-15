@@ -1,4 +1,15 @@
+/* global BigInt */
+import { Buffer } from 'buffer';
+
+// const { BigInt } = globalThis;
+
 const crypto = require('crypto');
+const hkdf = require('js-crypto-hkdf')
+const secureRandom = require('secure-random');
+
+
+// var aes256 = require('aes256');
+
 
 let decomposeIntoPowersOf2 = (num) => {
     const powersOf2 = []
@@ -39,6 +50,28 @@ let compute = (base, decomposedPower, mod) => {
     return res
 }
 
+
+const bigintToUint8Array = (bigint) => {
+    let hex = bigint.toString(16);  
+    if (hex.length % 2 !== 0) {
+      hex = '0' + hex;
+    }
+  
+    const byteArray = [];
+    for (let i = 0; i < hex.length; i += 2) {
+      byteArray.push(parseInt(hex.slice(i, i + 2), 16));
+    }
+
+    return new Uint8Array(byteArray);
+  }
+
+  let uint8ArrayToHexString = (uint8Array) => {
+    return Array.from(uint8Array)
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
+
 const pString = `
 FFFFFFFF FFFFFFFF C90FDAA2 2168C234 C4C6628B 80DC1CD1
 29024E08 8A67CC74 020BBEA6 3B139B22 514A0879 8E3404DD
@@ -57,30 +90,102 @@ F12FFA06 D98A0864 D8760273 3EC86A64 521F2B18 177B200C
 BBE11757 7A615D6C 770988C0 BAD946E2 08E24FA0 74E5AB31
 43DB5BFC E0FD108E 4B82D120 A93AD2CA FFFFFFFF FFFFFFFF
 `;
-
 const pStringNoWhitespace = pString.replace(/\s/g, '')
 const p = BigInt('0x' + pStringNoWhitespace)
 const g = BigInt(2)
 
-const a = crypto.randomBytes(32);
-const aBigInt = BigInt('0x' + a.toString('hex'))
-const A = compute(g, decomposeIntoPowersOf2(aBigInt), p)
 
-const b = crypto.randomBytes(32);
-const bBigInt = BigInt('0x' + b.toString('hex'))
-const B = compute(g, decomposeIntoPowersOf2(bBigInt), p)
+export const generateKeyToSend = () => {
+    // const a = crypto.randomBytes(32);
+    const aArray = secureRandom(32, {type: 'Array'})
+    const binaryString = aArray.map(value => value.toString(2).padStart(8, '0')).join('');
+    const aBigInt = BigInt('0b' + binaryString);
 
-const s1 = compute(B, decomposeIntoPowersOf2(aBigInt), p);
-const s2 = compute(A, decomposeIntoPowersOf2(bBigInt), p);
+    // const aBigInt = BigInt('0x' + a.toString('hex'))
+    // const aBigInt = BigInt('0xABCDEF')
+    const A = compute(g, decomposeIntoPowersOf2(aBigInt), p)
+    return {aBigInt, A}
+}
+export const computeSymmetricKey = (aBigInt, B) => {
+    return new Promise((resolve, reject) => {
+        const keyInput = compute(BigInt(B), decomposeIntoPowersOf2(aBigInt), p);
+        const keyInputArray = bigintToUint8Array(keyInput);
+        const hash = 'SHA-256';
+        const length = 32;
+        const info = '';
+        const salt = new Uint8Array();
+        hkdf.compute(keyInputArray, hash, length, info, salt)
+            .then((derivedKey) => {
+                const aesKey = uint8ArrayToHexString(derivedKey.key);
+                // console.log('aeskey here', aesKey);
+                resolve(aesKey);
+            })
+            .catch(reject);
+    });
+}
 
-console.log('p', p.toString(16));
-console.log('g', g.toString(16));
-console.log('a', aBigInt.toString(16));
-console.log('A', A.toString(16));
-console.log('b', bBigInt.toString(16));
-console.log('B', B.toString(16));
-console.log('s1', s1.toString(16));
-console.log('\n', 's2', s2.toString(16));
-console.log(s1 === s2);
+// let aInfo = generateKeyToSend();
+// let bInfo = generateKeyToSend();
+// console.log(aInfo.aBigInt, '\n', '\n', bInfo.A);
+
+// computeSymmetricKey(aInfo.aBigInt, bInfo.A)
+//     .then((aesKey) => {
+//         console.log('aesKey returned', aesKey);
+//     })
+//     .catch((error) => {
+//         console.error('Error:', error);
+//     });
+
+// const a = crypto.randomBytes(32);
+// const aBigInt = BigInt('0x' + a.toString('hex'))
+// const A = compute(g, decomposeIntoPowersOf2(aBigInt), p)
+
+// const b = crypto.randomBytes(32);
+// const bBigInt = BigInt('0x' + b.toString('hex'))
+// const B = compute(g, decomposeIntoPowersOf2(bBigInt), p)
+
+// const s1 = compute(B, decomposeIntoPowersOf2(aBigInt), p);
+// const s2 = compute(A, decomposeIntoPowersOf2(bBigInt), p);
+
+// console.log('p', p.toString(16));
+// console.log('g', g.toString(16));
+// console.log('a', aBigInt.toString(16));
+// console.log('A', A.toString(16));
+// console.log('b', bBigInt.toString(16));
+// console.log('B', B.toString(16));
+// console.log('s1', s1.toString(16));
+// console.log('\n', 's2', s2.toString(16));
+// console.log(s1 === s2);
+
+// const key = bigintToUint8Array(s1)
+// const hash = 'SHA-256'
+// const length = 32
+// const info = ''
+// const salt = new Uint8Array()
+// let aesKey = ''
+// hkdf.compute(key, hash, length, info, salt).then( (derivedKey) => {
+//     // now you get a key derived from the masterSecret
+//     console.log('-----------------------')
+//     console.log(derivedKey.key)
+//     console.log('-----------------------')
+//     console.log(uint8ArrayToHexString(derivedKey.key))
+//     aesKey = uint8ArrayToHexString(derivedKey.key)
+
+//     var encryptedPlainText = aes256.encrypt(aesKey, 'hello');
+//     console.log(encryptedPlainText)
+//     var decryptedPlainText = aes256.decrypt(aesKey, encryptedPlainText)
+//     console.log(decryptedPlainText)
 
 
+
+//   });
+  
+
+
+
+
+
+//   hkdf.compute(bigintToUint8Array(s2), hash, length, info, salt).then( (derivedKey) => {
+//     // now you get a key derived from the masterSecret
+//     console.log(uint8ArrayToHexString(derivedKey))
+//   });
