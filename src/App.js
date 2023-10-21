@@ -34,17 +34,19 @@ function App() {
   const [aesKey, setAesKey, aesKeyRef] = useState("")
   const [waitingForHandshakeResponse, setWaitingForHandshakeResponse, waitingForHandshakeResponseRef] = useState(false)
 
-  // const test = useRef("")
 
   useEffect(() => {
     console.log('setup listener again')
     socket.on("broadcastMessage", (msg) => {
       console.log("received a new msg", msg);
       if (!msg.handshake && (msg.sender === senderRef.current || msg.receiver === senderRef.current)) {
-        const decryptedMessage = aes256.decrypt(aesKeyRef.current, msg.message)    
-        console.log('decryptedmsg', decryptedMessage, 'msg message', msg.message)
-        msg.message = decryptedMessage
-        setMessages((prevMessages) => [...prevMessages, msg]);
+        let decryptedMessage = aes256.decrypt(aesKeyRef.current, msg.message)
+        if (decryptedMessage.startsWith("seashells_")) {
+          decryptedMessage = decryptedMessage.slice(10)
+          console.log('decryptedmsg', decryptedMessage, 'msg message', msg.message)
+          msg.message = decryptedMessage
+          setMessages((prevMessages) => [...prevMessages, msg]);  
+        }
       } else if (msg.handshake && msg.receiver === senderRef.current) {
         // receive handshake
 
@@ -66,7 +68,7 @@ function App() {
 
           // handshake request from a new client, tell the old client that connection has closed
           else if (connectionEstablishedWithRef.current !== '') {
-            socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'end'), handshake: true});
+            socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true});
           }
 
           console.log('h24', senderRef.current)
@@ -118,7 +120,7 @@ function App() {
 
     if (connectionEstablishedWithRef.current !== receiverRef.current) {
       if (connectionEstablishedWithRef.current !== '') {
-        socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'end'), handshake: true});
+        socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true});
       }
 
 
@@ -146,7 +148,7 @@ function App() {
             setAesKey(aesKey)
       
             console.log('aeskey is', aesKeyRef.current)
-            const encryptedMessage = aes256.encrypt(aesKeyRef.current, message)
+            const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${message}`)
             console.log('encryptedmessage', encryptedMessage)
             socket.emit("sendMessage", {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1});
         
@@ -158,7 +160,7 @@ function App() {
     }
 
     console.log('aeskey is', aesKeyRef.current)
-    const encryptedMessage = aes256.encrypt(aesKeyRef.current, message)
+    const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${message}`)
     console.log('encryptedmessage', encryptedMessage)
     socket.emit("sendMessage", {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1});
 
