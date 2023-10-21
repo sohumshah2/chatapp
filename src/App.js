@@ -54,7 +54,18 @@ function App() {
 
         else if (waitingForHandshakeResponseRef.current) {
         } else {
-          if (connectionEstablishedWithRef.current !== '') {
+
+          // handshake request from current client, we update their public key and recalculate the shared aeskey
+          if (msg.sender === connectionEstablishedWithRef.current) {
+            setDiffieHellmanReceiverPublic(msg.message)
+            computeSymmetricKey(diffieHellmanPrivateRef.current, msg.message).then((aesKey) => {
+              setAesKey(aesKey)
+            })
+            return
+          }
+
+          // handshake request from a new client, tell the old client that connection has closed
+          else if (connectionEstablishedWithRef.current !== '') {
             socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'end'), handshake: true});
           }
 
