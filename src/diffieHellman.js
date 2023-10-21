@@ -26,7 +26,7 @@ let decomposeIntoPowersOf2 = (num) => {
 }
 
 let compute = (base, decomposedPower, mod) => {
-    let prev = base % mod
+    let prev = BigInt(base) % BigInt(mod)
     let res = BigInt(1)
     let j = BigInt(0)
 
@@ -38,7 +38,7 @@ let compute = (base, decomposedPower, mod) => {
     let i = 1
 
     while (i <= decomposedPower[decomposedPower.length - 1]) {
-        prev = (prev ** BigInt(2)) % mod
+        prev = (BigInt(prev) ** BigInt(2)) % BigInt(mod)
         if (decomposedPower[j] === i) {
             res = (res * prev) % mod
         }

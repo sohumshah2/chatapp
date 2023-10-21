@@ -26,9 +26,8 @@ function App() {
   const [message, setMessage] = useState("");
   const [diffieHellmanPublic, setDiffieHellmanPublic] = useState("")
   const [diffieHellmanReceiverPublic, setDiffieHellmanReceiverPublic] = useState(BigInt(0))
-  const [connectionEstablishedWith, setConnectionEstablishedWith] = useState("")
 
-
+  const [connectionEstablishedWith, setConnectionEstablishedWith, connectionEstablishedWithRef] = useState("")
   const [diffieHellmanPrivate, setDiffieHellmanPrivate, diffieHellmanPrivateRef] = useState("")
   const [sender, setSender, senderRef] = useState("");
   const [receiver, setReceiver, receiverRef] = useState("");
@@ -46,17 +45,19 @@ function App() {
         console.log('decryptedmsg', decryptedMessage, 'msg message', msg.message)
         msg.message = decryptedMessage
         setMessages((prevMessages) => [...prevMessages, msg]);
-      } else if (msg.handshake && msg.receiver === senderRef.current) { //temp b return to sender TODO
+      } else if (msg.handshake && msg.receiver === senderRef.current) {
         // receive handshake
-        if (waitingForHandshakeResponseRef.current) {
-          // setConnectionEstablishedWith(msg.sender)
-          // setWaitingForHandshakeResponse(false)
-          // setDiffieHellmanReceiverPublic(BigInt(msg.message))
-          // computeSymmetricKey(diffieHellmanPrivate, BigInt(msg.message)).then((aesKey) => {
-          //   setAesKey(aesKey)
-          // }
-          // )
+
+        if (aesKeyRef.current !== '' && aes256.decrypt(aesKeyRef.current, msg.message) === 'end') {
+          setConnectionEstablishedWith('')
+        }
+
+        else if (waitingForHandshakeResponseRef.current) {
         } else {
+          if (connectionEstablishedWithRef.current !== '') {
+            socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'end'), handshake: true});
+          }
+
           console.log('h24', senderRef.current)
           setConnectionEstablishedWith(msg.sender)
           setReceiver(msg.sender)
@@ -102,9 +103,14 @@ function App() {
 
   const handleSendMessage = () => {
     console.log("Send button clicked");
-    console.log("have we estblished a connection?", connectionEstablishedWith)
+    console.log("have we estblished a connection?", connectionEstablishedWithRef.current)
 
-    if (connectionEstablishedWith !== receiverRef.current) {
+    if (connectionEstablishedWithRef.current !== receiverRef.current) {
+      if (connectionEstablishedWithRef.current !== '') {
+        socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'end'), handshake: true});
+      }
+
+
       // establishConnection() // this changes the variable 'key' with setKey
       setWaitingForHandshakeResponse(true)
 
@@ -131,7 +137,7 @@ function App() {
             console.log('aeskey is', aesKeyRef.current)
             const encryptedMessage = aes256.encrypt(aesKeyRef.current, message)
             console.log('encryptedmessage', encryptedMessage)
-            socket.emit("sendMessage", {sender, receiver, message: encryptedMessage, handshake: false, flagrmv: 1});
+            socket.emit("sendMessage", {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1});
         
           })
       }).catch((error) => {
@@ -143,7 +149,7 @@ function App() {
     console.log('aeskey is', aesKeyRef.current)
     const encryptedMessage = aes256.encrypt(aesKeyRef.current, message)
     console.log('encryptedmessage', encryptedMessage)
-    socket.emit("sendMessage", {sender, receiver, message: encryptedMessage, handshake: false, flagrmv: 1});
+    socket.emit("sendMessage", {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1});
 
     return
 
@@ -187,22 +193,42 @@ function App() {
   }
 
 
-
   const establishConnection2 = (handshakeMessage) => {
     return new Promise((resolve, reject) => {
-      socket.emit('sendMessage', handshakeMessage);
-      console.log('we sent this message', handshakeMessage)
-      socket.on('broadcastMessage', (message) => {
+      const broadcastListener = (message) => {
         console.log('jajaja we received a message inside here:', message)
         console.log(message.receiver, senderRef.current, message.handshake)
         if (message.receiver === senderRef.current && message.handshake) {
           console.log('we will resolve')
-          resolve(message)
+          resolve(message);
+          socket.off('broadcastMessage', broadcastListener);
         }
-      })
-
-    })
+      };
+        socket.on('broadcastMessage', broadcastListener);
+  
+      socket.emit('sendMessage', handshakeMessage);
+      console.log('we sent this message', handshakeMessage);
+    });
   }
+  
+
+
+  // const establishConnection2 = (handshakeMessage) => {
+  //   return new Promise((resolve, reject) => {
+  //     socket.emit('sendMessage', handshakeMessage);
+  //     console.log('we sent this message', handshakeMessage)
+  //     socket.on('broadcastMessage', (message) => {
+  //       console.log('jajaja we received a message inside here:', message)
+  //       console.log(message.receiver, senderRef.current, message.handshake)
+  //       if (message.receiver === senderRef.current && message.handshake) {
+  //         console.log('we will resolve')
+  //         resolve(message)
+  //         socket.off("broadcastMessage")
+  //       }
+  //     })
+
+  //   })
+  // }
 
 
   return (
