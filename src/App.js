@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, {useEffect, useRef } from "react";
 import io from "socket.io-client";
 import aes256 from "aes256";
+import useState from 'react-usestateref'
 import { Buffer } from 'buffer';
+import {generateKeyToSend, computeSymmetricKey} from './diffieHellman'
 
 
 /* global BigInt */
@@ -11,7 +13,6 @@ import { Buffer } from 'buffer';
 // import hkdf from 'js-crypto-hkdf'
 // const hkdf = require('js-crypto-hkdf')
 
-import {generateKeyToSend, computeSymmetricKey} from './diffieHellman'
 global.Buffer = global.Buffer || require('buffer').Buffer
 
 
@@ -21,46 +22,56 @@ const socket = io("https://chatappserver-ucb7.onrender.com"); // Replace with yo
 // });
 
 function App() {
-  const [sender, setSender] = useState("");
-  const [receiver, setReceiver] = useState("");
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [diffieHellmanPrivate, setDiffieHellmanPrivate] = useState("")
   const [diffieHellmanPublic, setDiffieHellmanPublic] = useState("")
   const [diffieHellmanReceiverPublic, setDiffieHellmanReceiverPublic] = useState(BigInt(0))
-  const [waitingForHandshakeResponse, setWaitingForHandshakeResponse] = useState(false)
-  const [aesKey, setAesKey] = useState("")
+  const [connectionEstablishedWith, setConnectionEstablishedWith] = useState("")
+
+
+  const [diffieHellmanPrivate, setDiffieHellmanPrivate, diffieHellmanPrivateRef] = useState("")
+  const [sender, setSender, senderRef] = useState("");
+  const [receiver, setReceiver, receiverRef] = useState("");
+  const [aesKey, setAesKey, aesKeyRef] = useState("")
+  const [waitingForHandshakeResponse, setWaitingForHandshakeResponse, waitingForHandshakeResponseRef] = useState(false)
+
+  // const test = useRef("")
 
   useEffect(() => {
     console.log('setup listener again')
     socket.on("broadcastMessage", (msg) => {
       console.log("received a new msg", msg);
-      if (!msg.handshake && (msg.sender === sender || msg.receiver === sender)) {
-        const decryptedMessage = aes256.decrypt(aesKey, msg.message)    
+      if (!msg.handshake && (msg.sender === senderRef.current || msg.receiver === senderRef.current)) {
+        const decryptedMessage = aes256.decrypt(aesKeyRef.current, msg.message)    
         console.log('decryptedmsg', decryptedMessage, 'msg message', msg.message)
         msg.message = decryptedMessage
         setMessages((prevMessages) => [...prevMessages, msg]);
-      } else if (msg.handshake && msg.receiver === sender) {
+      } else if (msg.handshake && msg.receiver === senderRef.current) { //temp b return to sender TODO
         // receive handshake
-        if (waitingForHandshakeResponse) {
-          setWaitingForHandshakeResponse(false)
-          setDiffieHellmanReceiverPublic(BigInt(msg.message))
-          computeSymmetricKey(diffieHellmanPrivate, BigInt(msg.message)).then((aesKey) => {
-            setAesKey(aesKey)
-          })
+        if (waitingForHandshakeResponseRef.current) {
+          // setConnectionEstablishedWith(msg.sender)
+          // setWaitingForHandshakeResponse(false)
+          // setDiffieHellmanReceiverPublic(BigInt(msg.message))
+          // computeSymmetricKey(diffieHellmanPrivate, BigInt(msg.message)).then((aesKey) => {
+          //   setAesKey(aesKey)
+          // }
+          // )
         } else {
-          console.log('h24')
+          console.log('h24', senderRef.current)
+          setConnectionEstablishedWith(msg.sender)
           setReceiver(msg.sender)
           setDiffieHellmanReceiverPublic(msg.message)
           const dh = generateKeyToSend()
           setDiffieHellmanPrivate(dh.aBigInt)
           setDiffieHellmanPublic(dh.A)
           socket.emit("sendMessage", {
-            'sender': sender,
+            'sender': senderRef.current,
             'receiver': msg.sender,
             'message': dh.A.toString(),
-            'handshake': true
+            'handshake': true,
+            'flagrmv': 0
           })
+          console.log('aeskey is computed with parameters', dh.aBigInt, msg.message)
           computeSymmetricKey(dh.aBigInt, msg.message).then((aesKey) => {
             setAesKey(aesKey)
           })
@@ -70,9 +81,9 @@ function App() {
 
     
     return () => {
-      socket.off("broadcastMessage")
+      // socket.off("broadcastMessage")
     };
-  }, [sender, diffieHellmanPrivate, diffieHellmanPublic, diffieHellmanReceiverPublic, receiver, waitingForHandshakeResponse, aesKey]);
+  }, []); // [sender, diffieHellmanPrivate, diffieHellmanPublic, diffieHellmanReceiverPublic, receiver, waitingForHandshakeResponse, aesKey]);
 
   useEffect(() => {
     console.log(JSON.stringify(messages))
@@ -83,33 +94,114 @@ function App() {
   // }, [sender, receiver, message, messages, diffieHellmanPrivate, diffieHellmanPublic, diffieHellmanReceiverPublic, waitingForHandshakeResponse, aesKey])
 
 
+  // const handleAesKeyUpdate = () => {
+  //   console.log("Using aesKey.....", aesKey, '.....');
+  // };
+  
+  
+
   const handleSendMessage = () => {
     console.log("Send button clicked");
+    console.log("have we estblished a connection?", connectionEstablishedWith)
+
+    if (connectionEstablishedWith !== receiverRef.current) {
+      // establishConnection() // this changes the variable 'key' with setKey
+      setWaitingForHandshakeResponse(true)
+
+      const dh = generateKeyToSend()
+      setDiffieHellmanPrivate(dh.aBigInt)
+      setDiffieHellmanPublic(dh.A)
+  
+      const handshakeMessage = {
+        'sender': senderRef.current,
+        'receiver': receiverRef.current,
+        'message': dh.A.toString(),
+        'handshake': true,
+        'flagrmv': 1
+      }
+      establishConnection2(handshakeMessage).then((handshakeReply) => {
+        console.log('received handshake reply', handshakeReply)
+          setConnectionEstablishedWith(handshakeReply.sender)
+          setWaitingForHandshakeResponse(false)
+          setDiffieHellmanReceiverPublic(BigInt(handshakeReply.message))
+          console.log('aeskey is computed with parameteeeers', diffieHellmanPrivateRef.current, 'and', BigInt(handshakeReply.message))
+          computeSymmetricKey(diffieHellmanPrivateRef.current, BigInt(handshakeReply.message)).then((aesKey) => {
+            setAesKey(aesKey)
+      
+            console.log('aeskey is', aesKeyRef.current)
+            const encryptedMessage = aes256.encrypt(aesKeyRef.current, message)
+            console.log('encryptedmessage', encryptedMessage)
+            socket.emit("sendMessage", {sender, receiver, message: encryptedMessage, handshake: false, flagrmv: 1});
+        
+          })
+      }).catch((error) => {
+        console.log('handshake error', error)
+      })
+      return
+    }
+
+    console.log('aeskey is', aesKeyRef.current)
+    const encryptedMessage = aes256.encrypt(aesKeyRef.current, message)
+    console.log('encryptedmessage', encryptedMessage)
+    socket.emit("sendMessage", {sender, receiver, message: encryptedMessage, handshake: false, flagrmv: 1});
+
+    return
+
+    // i need the updated key here
+    setAesKey('sdjasds')
+
+    console.log(`the aeskey is: ${aesKeyRef.current}`)
+    test.current = 'testvalue'
+    console.log(`the test vakue is: ${test.current}`)
+
+
+    // handleAesKeyUpdate()
+    // console.log("Using aesKey.....", aesKey, '.....');
+
+    
     console.log(message);
     const obj = generateKeyToSend()
     console.log(obj);
     const obj2 = generateKeyToSend()
     console.log(computeSymmetricKey(obj.aBigInt, obj2.A))
     console.log(computeSymmetricKey(obj2.aBigInt, obj.A))
-    const encryptedMessage = aes256.encrypt(aesKey, message)
+    // const encryptedMessage = aes256.encrypt(aesKey, message)
     console.log('encryptedmessage', encryptedMessage)
-    socket.emit("sendMessage", {sender, receiver, message: encryptedMessage, handshake: false});
+    socket.emit("sendMessage", {sender, receiver, message: encryptedMessage, handshake: false, flagrmv: 1});
     // setMessage("");
   };
 
   const establishConnection = () => {
-    const dh = generateKeyToSend()
-    setDiffieHellmanPrivate(dh.aBigInt)
-    setDiffieHellmanPublic(dh.A)
+    // const dh = generateKeyToSend()
+    // setDiffieHellmanPrivate(dh.aBigInt)
+    // setDiffieHellmanPublic(dh.A)
 
-    socket.emit("sendMessage", {
-      'sender': sender,
-      'receiver': receiver,
-      'message': dh.A.toString(),
-      'handshake': true
-    })
-    setWaitingForHandshakeResponse(true)
+    // socket.emit("sendMessage", {
+    //   'sender': sender,
+    //   'receiver': receiver,
+    //   'message': dh.A.toString(),
+    //   'handshake': true
+    // })
+    // setWaitingForHandshakeResponse(true)
     
+  }
+
+
+
+  const establishConnection2 = (handshakeMessage) => {
+    return new Promise((resolve, reject) => {
+      socket.emit('sendMessage', handshakeMessage);
+      console.log('we sent this message', handshakeMessage)
+      socket.on('broadcastMessage', (message) => {
+        console.log('jajaja we received a message inside here:', message)
+        console.log(message.receiver, senderRef.current, message.handshake)
+        if (message.receiver === senderRef.current && message.handshake) {
+          console.log('we will resolve')
+          resolve(message)
+        }
+      })
+
+    })
   }
 
 
@@ -117,10 +209,10 @@ function App() {
     <div className="App">
       <h1>Chat App</h1>
       <p>
-        sender: {sender}, receiver: {receiver}, aesKey: {aesKey} <br/>
-        dhPriv: {diffieHellmanPrivate.toString()}<br/>
-        dhPub: {diffieHellmanPublic.toString()}<br/>
-        dhRecPub: {diffieHellmanReceiverPublic.toString()}<br/>
+        sender: {sender}<br/><br/>receiver: {receiver}<br/><br/>aesKey: {aesKey} <br/><br/>
+        dhPriv: {diffieHellmanPrivate.toString()}<br/><br/>
+        dhPub: {diffieHellmanPublic.toString()}<br/><br/>
+        dhRecPub: {diffieHellmanReceiverPublic.toString()}<br/><br/>
       </p>
       <div className="message-container">
         <p style={{ fontWeight: "bold" }}>Messages:</p>
@@ -159,8 +251,8 @@ function App() {
           onInput={(e) => setReceiver(e.target.textContent)}
         ></span>
         <div>
-          <button onClick={establishConnection}>Establish connection</button>
-          <p>{waitingForHandshakeResponse ? 'true' : 'false'}</p>
+          {/* <button onClick={establishConnection}>Establish connection</button> */}
+          <p>Are we waiting for a Diffie Hellman handshake response?<br/> {waitingForHandshakeResponse ? 'yes' : 'no'}</p>
         </div>
 
         <p style={{ fontWeight: "bold" }}>Enter Message:</p>

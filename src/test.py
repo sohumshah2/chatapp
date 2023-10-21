@@ -14,7 +14,7 @@ def receive_message(message):
     print(f"Received message from server: {message}")
 
 # Connect to the Socket.io server
-sio.connect("http://9336-220-244-182-214.ngrok-free.app")
+sio.connect("https://chatappserver-ucb7.onrender.com")
 
 # Send a "sendMessage" event to the server
 message = "keyboard"
