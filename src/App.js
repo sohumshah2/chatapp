@@ -40,7 +40,8 @@ function App() {
   const [publicRSAKey, setPublicRSAKey, publicRSAKeyRef] = useState("")
   const [privateRSAKey, setPrivateRSAKey, privateRSAKeyRef] = useState("")
   const [n, setN, nRef] = useState("")
-
+  const [addressBook, setAddressBook, addressBookRef] = useState("")
+  const [contacts, setContacts, contactsRef] = useState({})
 
 
 
@@ -80,6 +81,20 @@ function App() {
             msg.receiverPublicRSA = senderRef.current
             msg.receiverN = ''
           }
+
+          let record = `${msg.receiverPublicRSA}+${msg.receiverN}`
+          if (record in contactsRef.current) {
+            msg.receiverPublicRSA = contactsRef.current[record]
+            msg.receiverN = ''
+          }
+
+          record = `${msg.publicRSA}+${msg.n}`
+          if (record in contactsRef.current) {
+            msg.publicRSA = contactsRef.current[record]
+            msg.n = ''
+          }
+
+
         
 
           setMessages((prevMessages) => [...prevMessages, msg]);  
@@ -340,6 +355,22 @@ function App() {
     });
   }
   
+  const handleSubmitAddressBook = () => {
+  const contactsFound = {};
+  const fields = addressBookRef.current.split(' ');
+  console.log(fields);
+  
+  for (let i = 0; i < fields.length; i += 3) {
+    const contact = fields.slice(i, i + 3);
+    const [publicRSA, n, name] = contact;
+    const key = publicRSA + '+' + n;
+    contactsFound[key] = name;
+  }
+  
+  setContacts(contactsFound);
+  console.log(contactsRef.current);
+}
+
 
 
   // const establishConnection2 = (handshakeMessage) => {
@@ -376,7 +407,6 @@ function App() {
       <div className="message-container">
         <p style={{ fontWeight: "bold" }}>Messages:</p>
         {messages
-          // .filter((msg) => msg.sender == sender || msg.receiver == sender)
           .map((msg, index) => (
             <div key={index}>
               {msg.publicRSA}-{msg.n} -&gt; {msg.receiverPublicRSA}-{msg.receiverN}: {msg.message}<br/>
@@ -384,6 +414,21 @@ function App() {
           ))}
       </div>
       <div className="input-container">
+      <p style={{ fontWeight: "bold" }}>Address book:</p>
+        <span
+          contentEditable="true"
+          value={addressBook}
+          style={{
+            display: "inline-block",
+            border: "1px solid black",
+            minWidth: "100px",
+            maxWidth: "200px",
+          }}
+          onInput={(e) => setAddressBook(e.target.textContent)}
+        ></span>
+        <div>
+          <button onClick={handleSubmitAddressBook}>Submit address book</button>
+        </div>
       <p style={{ fontWeight: "bold" }}>Enter public RSA key:</p>
         <span
           contentEditable="true"
