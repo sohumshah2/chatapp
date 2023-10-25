@@ -1,4 +1,6 @@
 import socketio
+import pprint
+
 
 sio = socketio.Client(reconnection=False)
 
@@ -9,7 +11,8 @@ def connect():
 @sio.on("broadcastMessage")
 def receive_message(message):
     # print(f"{message['sender']} -> {message['receiver']}: {message['message']}")
-    print(message, '\n')
+    pprint.pprint(message, indent = 4)
+    print('')
 
 # Connect to the Socket.io server
 sio.connect("https://chatappserver-ucb7.onrender.com")

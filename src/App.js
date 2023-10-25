@@ -33,7 +33,8 @@ function App() {
   const [connectionEstablishedWith, setConnectionEstablishedWith, connectionEstablishedWithRef] = useState("")
   const [diffieHellmanPrivate, setDiffieHellmanPrivate, diffieHellmanPrivateRef] = useState("")
   const [sender, setSender, senderRef] = useState("");
-  const [receiver, setReceiver, receiverRef] = useState("");
+  const [receiverN, setReceiverN, receiverNRef] = useState("");
+  const [receiverRSAPub, setReceiverRSAPub, receiverRSAPubRef] = useState("");
   const [aesKey, setAesKey, aesKeyRef] = useState("")
   const [waitingForHandshakeResponse, setWaitingForHandshakeResponse, waitingForHandshakeResponseRef] = useState(false)
   const [publicRSAKey, setPublicRSAKey, publicRSAKeyRef] = useState("")
@@ -63,19 +64,32 @@ function App() {
       }
 
 
-      if (!msg.handshake && (msg.sender === senderRef.current || msg.receiver === senderRef.current)) {
+      if (!msg.handshake && (((msg.publicRSA === publicRSAKeyRef.current.toString() && msg.n === nRef.current.toString()) || (msg.receiverPublicRSA === publicRSAKeyRef.current.toString() && msg.receiverN === nRef.current.toString())))) {
         let decryptedMessage = aes256.decrypt(aesKeyRef.current, msg.message)
         if (decryptedMessage.startsWith("seashells_")) {
           decryptedMessage = decryptedMessage.slice(10)
           console.log('decryptedmsg', decryptedMessage, 'msg message', msg.message)
           msg.message = decryptedMessage
+
+          if (msg.publicRSA === publicRSAKeyRef.current.toString() && msg.n === nRef.current.toString()) {
+            msg.publicRSA = senderRef.current
+            msg.n = ''
+          }
+
+          if (msg.receiverPublicRSA === publicRSAKeyRef.current.toString() && msg.receiverN === nRef.current.toString()) {
+            msg.receiverPublicRSA = senderRef.current
+            msg.receiverN = ''
+          }
+        
+
           setMessages((prevMessages) => [...prevMessages, msg]);  
         }
         else {
-          console.log('wa wa wa wa wa wa wa wa wa wa wa wa aw')
+          console.log('wa wa wa wa wa wa wa wa wa wa wa wa wa')
         }
-      } else if (msg.handshake && msg.receiver === senderRef.current) {
+      } else if (msg.handshake && (msg.receiverPublicRSA === publicRSAKeyRef.current.toString() && msg.receiverN === nRef.current.toString())) {
         // receive handshake
+        console.log('recieving handshake?')
 
         if (aesKeyRef.current !== '' && aes256.decrypt(aesKeyRef.current, msg.message) === 'end') {
           setConnectionEstablishedWith('')
@@ -85,34 +99,38 @@ function App() {
         } else {
 
           // handshake request from current client, we update their public key and recalculate the shared aeskey
+          // this section is not relevant anymore i think - because we compute a new DH key every message now
           if (msg.sender === connectionEstablishedWithRef.current) {
-            setDiffieHellmanReceiverPublic(msg.message)
-            computeSymmetricKey(diffieHellmanPrivateRef.current, msg.message).then((aesKey) => {
-              setAesKey(aesKey)
-            })
-            return
+            // setDiffieHellmanReceiverPublic(msg.message)
+            // computeSymmetricKey(diffieHellmanPrivateRef.current, msg.message).then((aesKey) => {
+            //   setAesKey(aesKey)
+            // })
+            // return
           }
 
           // handshake request from a new client, tell the old client that connection has closed
+          // this section is not relevant anymore i think - because we compute a new DH key every message now
           else if (connectionEstablishedWithRef.current !== '') {
-            const message = {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true}
-            const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
-            message.sign = sign.toString()
-            message.publicRSA = publicRSAKeyRef.current.toString()
-            message.n = nRef.current.toString()
-            socket.emit("sendMessage", message);
+            // const message = {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true}
+            // const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
+            // message.sign = sign.toString()
+            // message.publicRSA = publicRSAKeyRef.current.toString()
+            // message.n = nRef.current.toString()
+            // socket.emit("sendMessage", message);
           }
 
           console.log('h24', senderRef.current)
           // setConnectionEstablishedWith(msg.sender) // commented out so handshake is done on every message
-          setReceiver(msg.sender)
+          setReceiverRSAPub(msg.publicRSA)
+          setReceiverN(msg.n)
           setDiffieHellmanReceiverPublic(msg.message)
           const dh = generateKeyToSend()
           setDiffieHellmanPrivate(dh.aBigInt)
           setDiffieHellmanPublic(dh.A)
           const message = {
             'sender': senderRef.current,
-            'receiver': msg.sender,
+            'receiverN': msg.n,
+            'receiverPublicRSA': msg.publicRSA,
             'message': dh.A.toString(),
             'handshake': true,
             'flagrmv': 0
@@ -155,10 +173,18 @@ function App() {
     console.log("Send button clicked");
     console.log("have we estblished a connection?", connectionEstablishedWithRef.current)
 
-    if (connectionEstablishedWithRef.current !== receiverRef.current) {
+    if (connectionEstablishedWithRef.current === '') {
       if (connectionEstablishedWithRef.current !== '') {
 
-        const message = {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true}
+        // btw sender field should no longer be used anywhere, we use publicRSA and n fields to represent the sender
+
+        // this code isnt relevant anymore i think, since we do dh handshake every message (conectionEstablishedWIth will always be '' so this code will be no executed)
+        const message = {
+          sender: senderRef.current,
+          receiver: connectionEstablishedWithRef.current, 
+          message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), 
+          handshake: true
+        }
         const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
         message.sign = sign.toString()
         message.publicRSA = publicRSAKeyRef.current.toString()
@@ -177,7 +203,8 @@ function App() {
   
       const handshakeMessage = {
         'sender': senderRef.current,
-        'receiver': receiverRef.current,
+        'receiverN': receiverNRef.current,
+        'receiverPublicRSA': receiverRSAPubRef.current,
         'message': dh.A.toString(),
         'handshake': true,
         'flagrmv': 1
@@ -200,7 +227,15 @@ function App() {
             const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${messageRef.current}`)
             console.log('encryptedmessage', encryptedMessage)
 
-            const message = {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1}
+            const message = {
+              sender: senderRef.current, 
+              receiverN: receiverNRef.current,
+              receiverPublicRSA: receiverRSAPubRef.current,
+              // receiver: receiverRef.current, 
+              message: encryptedMessage, 
+              handshake: false, 
+              flagrmv: 1
+            }
             const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
             message.sign = sign.toString()
             message.publicRSA = publicRSAKeyRef.current.toString()
@@ -217,7 +252,15 @@ function App() {
     const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${messageRef.current}`)
     console.log('encryptedmessage', encryptedMessage)
 
-    const message = {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1}
+    const message = {
+      sender: senderRef.current, 
+      // receiver: receiverRef.current, 
+      receiverN: receiverNRef.current,
+      receiverPublicRSA: receiverRSAPubRef.current,
+      message: encryptedMessage, 
+      handshake: false, 
+      flagrmv: 1
+    }
     const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
     message.sign = sign.toString()
     message.publicRSA = publicRSAKeyRef.current.toString()
@@ -225,6 +268,7 @@ function App() {
     socket.emit("sendMessage", message)
     return
 
+    /* 
     // i need the updated key here
     setAesKey('sdjasds')
 
@@ -261,7 +305,7 @@ function App() {
     //   'handshake': true
     // })
     // setWaitingForHandshakeResponse(true)
-    
+  */    
   }
 
 
@@ -270,7 +314,7 @@ function App() {
       const broadcastListener = (message) => {
         console.log('jajaja we received a message inside here:',JSON.stringify(message))
         console.log(message.receiver, senderRef.current, message.handshake)
-        if (message.receiver === senderRef.current && message.handshake) {
+        if (message.receiverN === nRef.current.toString() && message.receiverPublicRSA === publicRSAKeyRef.current.toString() && message.handshake) {
           // Check whether the message really is sent by the supposed sender (the given public key, n)
           const receivedHash = message.sign
           console.log('received hash', JSON.stringify(receivedHash))
@@ -324,7 +368,7 @@ function App() {
         private RSA key: {privateRSAKeyRef.current.toString()}<br/><br/>
         n: {nRef.current.toString()}<br/><br/>
         dhRecPub: {diffieHellmanReceiverPublic.toString()}<br/><br/>
-        sender: {sender}<br/><br/>receiver: {receiver}<br/><br/>aesKey: {aesKey} <br/><br/>
+        sender: {sender}<br/><br/>aesKey: {aesKey} <br/><br/>
         dhPriv: {diffieHellmanPrivate.toString()}<br/><br/>
         dhPub: {diffieHellmanPublic.toString()}<br/><br/>
         dhRecPub: {diffieHellmanReceiverPublic.toString()}<br/><br/>
@@ -335,7 +379,7 @@ function App() {
           // .filter((msg) => msg.sender == sender || msg.receiver == sender)
           .map((msg, index) => (
             <div key={index}>
-              {msg.sender} -&gt; {msg.receiver}: {msg.message}
+              {msg.publicRSA}-{msg.n} -&gt; {msg.receiverPublicRSA}-{msg.receiverN}: {msg.message}<br/>
             </div>
           ))}
       </div>
@@ -343,7 +387,7 @@ function App() {
       <p style={{ fontWeight: "bold" }}>Enter public RSA key:</p>
         <span
           contentEditable="true"
-          value={receiver}
+          value={publicRSAKey}
           style={{
             display: "inline-block",
             border: "1px solid black",
@@ -355,7 +399,7 @@ function App() {
         <p style={{ fontWeight: "bold" }}>Enter private RSA key:</p>
         <span
           contentEditable="true"
-          value={receiver}
+          value={privateRSAKey}
           style={{
             display: "inline-block",
             border: "1px solid black",
@@ -367,7 +411,7 @@ function App() {
         <p style={{ fontWeight: "bold" }}>Enter n:</p>
         <span
           contentEditable="true"
-          value={receiver}
+          value={n}
           style={{
             display: "inline-block",
             border: "1px solid black",
@@ -403,17 +447,29 @@ function App() {
           }}
           onInput={(e) => setSender(e.target.textContent)}
         ></span> */}
-        <p style={{ fontWeight: "bold" }}>Enter receiver username:</p>
+        <p style={{ fontWeight: "bold" }}>Enter receiver n:</p>
         <span
           contentEditable="true"
-          value={receiver}
+          value={receiverN}
           style={{
             display: "inline-block",
             border: "1px solid black",
             minWidth: "100px",
             maxWidth: "200px",
           }}
-          onInput={(e) => setReceiver(e.target.textContent)}
+          onInput={(e) => setReceiverN(e.target.textContent)}
+        ></span>
+        <p style={{ fontWeight: "bold" }}>Enter receiver rsa public key:</p>
+        <span
+          contentEditable="true"
+          value={receiverRSAPub}
+          style={{
+            display: "inline-block",
+            border: "1px solid black",
+            minWidth: "100px",
+            maxWidth: "200px",
+          }}
+          onInput={(e) => setReceiverRSAPub(e.target.textContent)}
         ></span>
         <div>
           {/* <button onClick={establishConnection}>Establish connection</button> */}
