@@ -1,9 +1,11 @@
 import React, {useEffect, useRef } from "react";
+import crypto from 'crypto'
 import io from "socket.io-client";
 import aes256 from "aes256";
 import useState from 'react-usestateref'
 import { Buffer } from 'buffer';
 import {generateKeyToSend, computeSymmetricKey} from './diffieHellman'
+import {generateKeys, hashAndEncrypt, confirmWhetherMatch}  from './rsa'
 
 
 /* global BigInt */
@@ -23,22 +25,44 @@ const socket = io("https://chatappserver-ucb7.onrender.com"); // Replace with yo
 
 function App() {
   const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState("");
   const [diffieHellmanPublic, setDiffieHellmanPublic] = useState("")
   const [diffieHellmanReceiverPublic, setDiffieHellmanReceiverPublic] = useState(BigInt(0))
 
+
+  const [message, setMessage, messageRef] = useState("");
   const [connectionEstablishedWith, setConnectionEstablishedWith, connectionEstablishedWithRef] = useState("")
   const [diffieHellmanPrivate, setDiffieHellmanPrivate, diffieHellmanPrivateRef] = useState("")
   const [sender, setSender, senderRef] = useState("");
   const [receiver, setReceiver, receiverRef] = useState("");
   const [aesKey, setAesKey, aesKeyRef] = useState("")
   const [waitingForHandshakeResponse, setWaitingForHandshakeResponse, waitingForHandshakeResponseRef] = useState(false)
+  const [publicRSAKey, setPublicRSAKey, publicRSAKeyRef] = useState("")
+  const [privateRSAKey, setPrivateRSAKey, privateRSAKeyRef] = useState("")
+  const [n, setN, nRef] = useState("")
+
+
 
 
   useEffect(() => {
     console.log('setup listener again')
     socket.on("broadcastMessage", (msg) => {
       console.log("received a new msg", msg);
+
+      // Check whether the message really is sent by the supposed sender (the given public key, n)
+      const receivedHash = msg.sign
+      delete msg['sign']
+      if (confirmWhetherMatch(msg, BigInt(receivedHash), BigInt(msg.publicRSA), BigInt(msg.n))) {
+        console.log('message authenticated', msg)
+        msg.sign = receivedHash
+      }
+      else {
+        msg.sign = receivedHash
+        console.log('message not genuine')
+        return
+
+      }
+
+
       if (!msg.handshake && (msg.sender === senderRef.current || msg.receiver === senderRef.current)) {
         let decryptedMessage = aes256.decrypt(aesKeyRef.current, msg.message)
         if (decryptedMessage.startsWith("seashells_")) {
@@ -46,6 +70,9 @@ function App() {
           console.log('decryptedmsg', decryptedMessage, 'msg message', msg.message)
           msg.message = decryptedMessage
           setMessages((prevMessages) => [...prevMessages, msg]);  
+        }
+        else {
+          console.log('wa wa wa wa wa wa wa wa wa wa wa wa aw')
         }
       } else if (msg.handshake && msg.receiver === senderRef.current) {
         // receive handshake
@@ -68,23 +95,33 @@ function App() {
 
           // handshake request from a new client, tell the old client that connection has closed
           else if (connectionEstablishedWithRef.current !== '') {
-            socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true});
+            const message = {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true}
+            const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
+            message.sign = sign.toString()
+            message.publicRSA = publicRSAKeyRef.current.toString()
+            message.n = nRef.current.toString()
+            socket.emit("sendMessage", message);
           }
 
           console.log('h24', senderRef.current)
-          setConnectionEstablishedWith(msg.sender)
+          // setConnectionEstablishedWith(msg.sender) // commented out so handshake is done on every message
           setReceiver(msg.sender)
           setDiffieHellmanReceiverPublic(msg.message)
           const dh = generateKeyToSend()
           setDiffieHellmanPrivate(dh.aBigInt)
           setDiffieHellmanPublic(dh.A)
-          socket.emit("sendMessage", {
+          const message = {
             'sender': senderRef.current,
             'receiver': msg.sender,
             'message': dh.A.toString(),
             'handshake': true,
             'flagrmv': 0
-          })
+          }
+          const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
+          message.sign = sign.toString()
+          message.publicRSA = publicRSAKeyRef.current.toString()
+          message.n = nRef.current.toString()
+          socket.emit("sendMessage", message)
           console.log('aeskey is computed with parameters', dh.aBigInt, msg.message)
           computeSymmetricKey(dh.aBigInt, msg.message).then((aesKey) => {
             setAesKey(aesKey)
@@ -100,7 +137,7 @@ function App() {
   }, []); // [sender, diffieHellmanPrivate, diffieHellmanPublic, diffieHellmanReceiverPublic, receiver, waitingForHandshakeResponse, aesKey]);
 
   useEffect(() => {
-    console.log(JSON.stringify(messages))
+    console.log((messages))
   }, [messages])
 
   // useEffect(() => {
@@ -120,7 +157,14 @@ function App() {
 
     if (connectionEstablishedWithRef.current !== receiverRef.current) {
       if (connectionEstablishedWithRef.current !== '') {
-        socket.emit("sendMessage", {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true});
+
+        const message = {sender: senderRef.current, receiver: connectionEstablishedWithRef.current, message: aes256.encrypt(aesKeyRef.current, 'seashells_end'), handshake: true}
+        const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
+        message.sign = sign.toString()
+        message.publicRSA = publicRSAKeyRef.current.toString()
+        message.n = nRef.current.toString()
+        socket.emit("sendMessage", message)
+
       }
 
 
@@ -138,9 +182,14 @@ function App() {
         'handshake': true,
         'flagrmv': 1
       }
+      const sign = hashAndEncrypt(handshakeMessage, nRef.current, privateRSAKeyRef.current)
+      handshakeMessage.publicRSA = publicRSAKeyRef.current.toString()
+      handshakeMessage.n = nRef.current.toString()
+      handshakeMessage.sign = sign.toString()
+
       establishConnection2(handshakeMessage).then((handshakeReply) => {
         console.log('received handshake reply', handshakeReply)
-          setConnectionEstablishedWith(handshakeReply.sender)
+          // setConnectionEstablishedWith(handshakeReply.sender) // commented out so handshake is done on every message
           setWaitingForHandshakeResponse(false)
           setDiffieHellmanReceiverPublic(BigInt(handshakeReply.message))
           console.log('aeskey is computed with parameteeeers', diffieHellmanPrivateRef.current, 'and', BigInt(handshakeReply.message))
@@ -148,10 +197,15 @@ function App() {
             setAesKey(aesKey)
       
             console.log('aeskey is', aesKeyRef.current)
-            const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${message}`)
+            const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${messageRef.current}`)
             console.log('encryptedmessage', encryptedMessage)
-            socket.emit("sendMessage", {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1});
-        
+
+            const message = {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1}
+            const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
+            message.sign = sign.toString()
+            message.publicRSA = publicRSAKeyRef.current.toString()
+            message.n = nRef.current.toString()
+            socket.emit("sendMessage", message)   
           })
       }).catch((error) => {
         console.log('handshake error', error)
@@ -160,10 +214,15 @@ function App() {
     }
 
     console.log('aeskey is', aesKeyRef.current)
-    const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${message}`)
+    const encryptedMessage = aes256.encrypt(aesKeyRef.current, `seashells_${messageRef.current}`)
     console.log('encryptedmessage', encryptedMessage)
-    socket.emit("sendMessage", {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1});
 
+    const message = {sender: senderRef.current, receiver: receiverRef.current, message: encryptedMessage, handshake: false, flagrmv: 1}
+    const sign = hashAndEncrypt(message, nRef.current, privateRSAKeyRef.current)
+    message.sign = sign.toString()
+    message.publicRSA = publicRSAKeyRef.current.toString()
+    message.n = nRef.current.toString()
+    socket.emit("sendMessage", message)
     return
 
     // i need the updated key here
@@ -209,12 +268,25 @@ function App() {
   const establishConnection2 = (handshakeMessage) => {
     return new Promise((resolve, reject) => {
       const broadcastListener = (message) => {
-        console.log('jajaja we received a message inside here:', message)
+        console.log('jajaja we received a message inside here:',JSON.stringify(message))
         console.log(message.receiver, senderRef.current, message.handshake)
         if (message.receiver === senderRef.current && message.handshake) {
-          console.log('we will resolve')
-          resolve(message);
-          socket.off('broadcastMessage', broadcastListener);
+          // Check whether the message really is sent by the supposed sender (the given public key, n)
+          const receivedHash = message.sign
+          console.log('received hash', JSON.stringify(receivedHash))
+          delete message['sign']
+          console.log('data', message, receivedHash, message.publicRSA, message.n)
+          if (confirmWhetherMatch(message, BigInt(receivedHash), BigInt(message.publicRSA), BigInt(message.n))) {
+            console.log('message authenticated', message)
+            console.log('we will resolve')
+            message.sign = receivedHash
+            resolve(message);
+            socket.off('broadcastMessage', broadcastListener);
+          }
+          else {
+            message.sign = receivedHash
+            console.log('message not genuine ye', message)
+          }
         }
       };
         socket.on('broadcastMessage', broadcastListener);
@@ -248,6 +320,10 @@ function App() {
     <div className="App">
       <h1>Chat App</h1>
       <p>
+        public RSA key: {publicRSAKeyRef.current.toString()}<br/><br/>
+        private RSA key: {privateRSAKeyRef.current.toString()}<br/><br/>
+        n: {nRef.current.toString()}<br/><br/>
+        dhRecPub: {diffieHellmanReceiverPublic.toString()}<br/><br/>
         sender: {sender}<br/><br/>receiver: {receiver}<br/><br/>aesKey: {aesKey} <br/><br/>
         dhPriv: {diffieHellmanPrivate.toString()}<br/><br/>
         dhPub: {diffieHellmanPublic.toString()}<br/><br/>
@@ -264,6 +340,56 @@ function App() {
           ))}
       </div>
       <div className="input-container">
+      <p style={{ fontWeight: "bold" }}>Enter public RSA key:</p>
+        <span
+          contentEditable="true"
+          value={receiver}
+          style={{
+            display: "inline-block",
+            border: "1px solid black",
+            minWidth: "100px",
+            maxWidth: "200px",
+          }}
+          onInput={(e) => setPublicRSAKey(BigInt(e.target.textContent))}
+        ></span>
+        <p style={{ fontWeight: "bold" }}>Enter private RSA key:</p>
+        <span
+          contentEditable="true"
+          value={receiver}
+          style={{
+            display: "inline-block",
+            border: "1px solid black",
+            minWidth: "100px",
+            maxWidth: "200px",
+          }}
+          onInput={(e) => setPrivateRSAKey(BigInt(e.target.textContent))}
+        ></span>
+        <p style={{ fontWeight: "bold" }}>Enter n:</p>
+        <span
+          contentEditable="true"
+          value={receiver}
+          style={{
+            display: "inline-block",
+            border: "1px solid black",
+            minWidth: "100px",
+            maxWidth: "200px",
+          }}
+          onInput={(e) => setN(BigInt(e.target.textContent))}
+        ></span>
+        <div>
+          <button onClick={() => {
+            // generateKeys.
+
+            generateKeys()
+            .then(keys => {
+              setN(keys.n)
+              setPrivateRSAKey(keys.d)
+              setPublicRSAKey(keys.e)
+            })
+
+
+          }}>Generate RSA keys</button>
+        </div>
         <p style={{ fontWeight: "bold" }}>Enter your username:</p>
         <input onChange={(e) => setSender(e.target.value)}></input>
         {/* <span

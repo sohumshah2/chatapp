@@ -1,8 +1,12 @@
+/* global BigInt */
+// import { SHA256, enc } from 'crypto-js';
+const { SHA256, enc } = require('crypto-js');
 const getlargePrime = require('get-large-prime');
 const bigintModArith = require('bigint-mod-arith')
-const crypto = require('crypto');
+// const crypto = require('crypto');
 
-const generateKeys = async () => {
+
+ export const generateKeys = async () => {
     const largePrime1 = await getlargePrime(1024); // maybe implement myself later
     const p = BigInt(largePrime1);
     
@@ -17,20 +21,20 @@ const generateKeys = async () => {
     return { n, e, d };
 }
 
-const hashAndEncrypt = (message, n, d) => {
-    const sha256HashHex = crypto.createHash('sha256').update(message).digest('hex');
+ export const hashAndEncrypt = (message, n, d) => {
+    // const sha256HashHex = crypto.createHash('sha256').update(message).digest('hex');
+    const sha256HashHex = SHA256(message.toString()).toString(enc.Hex)
     const sha256HashBigInt = BigInt("0x" + sha256HashHex);
     const s = bigintModArith.modPow(sha256HashBigInt, d, n) // alr implemented myself in diffiehellman.js, connect it here
     return s
-
 }
 
-const confirmWhetherMatch = (receivedMessage, receivedEncryptedHash, e, n) => {
-    const calculatedHashHex = crypto.createHash('sha256').update(receivedMessage).digest('hex');
+export const confirmWhetherMatch = (receivedMessage, receivedEncryptedHash, e, n) => {
+    // const calculatedHashHex = crypto.createHash('sha256').update(receivedMessage).digest('hex');
+    const calculatedHashHex = SHA256(receivedMessage.toString()).toString(enc.Hex)
     const calculatedHashBigInt = BigInt("0x" + calculatedHashHex);
     const decryptedHash = bigintModArith.modPow(receivedEncryptedHash, e, n)
     return calculatedHashBigInt === decryptedHash
-
 }
 
 generateKeys()
@@ -41,14 +45,14 @@ generateKeys()
         console.log('match?', confirmWhetherMatch('wassup', encryptedHash, keys.e, keys.n))
     });
 
-return
+// return
 
 
 
 
 
 
-
+/*
 
 
 
@@ -129,3 +133,4 @@ getlargePrime(1024).then((largePrime) => {
 
 
 
+*/

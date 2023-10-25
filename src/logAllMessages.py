@@ -8,7 +8,8 @@ def connect():
 
 @sio.on("broadcastMessage")
 def receive_message(message):
-    print(f"{message['sender']} -> {message['receiver']}: {message['message']}")
+    # print(f"{message['sender']} -> {message['receiver']}: {message['message']}")
+    print(message, '\n')
 
 # Connect to the Socket.io server
 sio.connect("https://chatappserver-ucb7.onrender.com")
