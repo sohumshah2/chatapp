@@ -318,15 +318,17 @@ function App() {
             // if (rece)
 
             for (const record in contactsRef.current) {
-              console.log('record', record)
-              if (contactsRef.current[record] === receiverRSAPubRef.current.toString()) {
-                console.log('found!')
-                const parts = record.split('+');
-                message.receiverPublicRSA = parts[0]
-                message.receiverN = parts[1]
+              console.log("record", record);
+              if (
+                contactsRef.current[record] ===
+                receiverRSAPubRef.current.toString()
+              ) {
+                console.log("found!");
+                const parts = record.split("+");
+                message.receiverPublicRSA = parts[0];
+                message.receiverN = parts[1];
               }
             }
-
 
             socket.emit("sendMessage", message);
           });
@@ -362,12 +364,14 @@ function App() {
     message.publicRSA = publicRSAKeyRef.current.toString();
     message.n = nRef.current.toString();
     for (const record in contactsRef.current) {
-      console.log('record', record)
-      if (contactsRef.current[record] === receiverRSAPubRef.current.toString()) {
-        console.log('found!')
-        const parts = record.split('+');
-        message.receiverPublicRSA = parts[0]
-        message.receiverN = parts[1]
+      console.log("record", record);
+      if (
+        contactsRef.current[record] === receiverRSAPubRef.current.toString()
+      ) {
+        console.log("found!");
+        const parts = record.split("+");
+        message.receiverPublicRSA = parts[0];
+        message.receiverN = parts[1];
       }
     }
     socket.emit("sendMessage", message);
@@ -457,14 +461,16 @@ function App() {
         }
       };
       socket.on("broadcastMessage", broadcastListener);
-      
+
       for (const record in contactsRef.current) {
-        console.log('record', record)
-        if (contactsRef.current[record] === receiverRSAPubRef.current.toString()) {
-          console.log('found!')
-          const parts = record.split('+');
-          handshakeMessage.receiverPublicRSA = parts[0]
-          handshakeMessage.receiverN = parts[1]
+        console.log("record", record);
+        if (
+          contactsRef.current[record] === receiverRSAPubRef.current.toString()
+        ) {
+          console.log("found!");
+          const parts = record.split("+");
+          handshakeMessage.receiverPublicRSA = parts[0];
+          handshakeMessage.receiverN = parts[1];
         }
       }
 
@@ -489,199 +495,264 @@ function App() {
     console.log(contactsRef.current);
   };
 
-  // const establishConnection2 = (handshakeMessage) => {
-  //   return new Promise((resolve, reject) => {
-  //     socket.emit('sendMessage', handshakeMessage);
-  //     console.log('we sent this message', handshakeMessage)
-  //     socket.on('broadcastMessage', (message) => {
-  //       console.log('jajaja we received a message inside here:', message)
-  //       console.log(message.receiver, senderRef.current, message.handshake)
-  //       if (message.receiver === senderRef.current && message.handshake) {
-  //         console.log('we will resolve')
-  //         resolve(message)
-  //         socket.off("broadcastMessage")
-  //       }
-  //     })
-
-  //   })
-  // }
+  const messageTable = ({ messages }) => {
+    return (
+      <table className="messagesTable">
+        <thead>
+          <tr>
+            <th>Sender</th>
+            <th>Receiver Public RSA</th>
+            <th>N</th>
+            <th>Receiver N</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {messages.map((message, index) => (
+            <tr key={index}>
+              <td>{message.publicRSA}</td>
+              <td>{message.n}</td>
+              <td>{message.receiverPublicRSA}</td>
+              <td>{message.receiverN}</td>
+              <td>{message.message}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
 
   return (
     <div className="App">
+      <div className="head">
+          <h1>E2Elevation: Elevating your conversations with end to end encryption</h1>
+        </div>
+      <div className="body">
       <div className="Messages">
-        <h1>Chat App</h1>
 
-        <div className="message-container">
-          <p style={{ fontWeight: "bold" }}>Messages:</p>
-          {messages.map((msg, index) => (
-            <div key={index}>
-              {msg.publicRSA}-{msg.n} -&gt; {msg.receiverPublicRSA}-
-              {msg.receiverN}: {msg.message}
-              <br />
-            </div>
-          ))}
-        </div>
-        <div className="input-container">
-          <p style={{ fontWeight: "bold" }}>Enter receiver RSA public key:</p>
-          <span
-            className="editable-span"
-            contentEditable="true"
-            value={receiverRSAPub}
-            onInput={(e) => setReceiverRSAPub(e.target.textContent)}
-          ></span>
-          <p style={{ fontWeight: "bold" }}>Enter receiver n:</p>
-          <span
-            contentEditable="true"
-            value={receiverN}
-            className="editable-span"
-            onInput={(e) => setReceiverN(e.target.textContent)}
-          ></span>
-          <p style={{ fontWeight: "bold" }}>Enter Message:</p>
-          <span
-            contentEditable="true"
-            className="editable-span"
-            value={message}
-            onInput={(e) => setMessage(e.target.textContent)}
-          ></span>
-          <div>
-            <button onClick={handleSendMessage}>Send</button>
-          </div>
-        </div>
-      </div>
-      <div className="Config">
-        <h3>Config values</h3>
-        <table>
-          <tr>
-            <th>public RSA key</th>
-            <td>
+<div className="message-container">
+  <div>
+    <h3>Messages</h3>
+    <table className="messagesTable">
+      <thead>
+        <tr>
+          <th className="messagesTableTh">Sender</th>
+          <th className="messagesTableTh">Receiver</th>
+          {/* <th className="messagesTableTh">Public RSA</th>
+    <th className="messagesTableTh">n</th> */}
+          {/* <th className="messagesTableTh">Receiver Public RSA</th>
+    <th className="messagesTableTh">Receiver N</th> */}
+          <th className="messagesTableTh">Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        {messages.map((message, index) => (
+          <tr key={index}>
+            <td className="messagesTableTd">
               <div className="tableElement">
-                {publicRSAKeyRef.current.toString()}
+                {message.publicRSA} {message.n}
               </div>
             </td>
-          </tr>
-          <tr>
-            <th>private RSA key</th>
-            <td>
+            <td className="messagesTableTd">
               <div className="tableElement">
-                {privateRSAKeyRef.current.toString()}
+                {message.receiverPublicRSA} {message.receiverN}
               </div>
             </td>
-          </tr>
-          <tr>
-            <th>n</th>
-            <td>
-              <div className="tableElement">{nRef.current.toString()}</div>
+            {/* <td className="messagesTableTd">
+        <div className="tableElement">{message.publicRSA}</div>
+      </td>
+      <td className="messagesTableTd">
+        <div className="tableElement">{message.n}</div>
+      </td> */}
+            {/* <td className="messagesTableTd">
+        <div className="tableElement">{message.receiverPublicRSA}</div>
+      </td>
+      <td className="messagesTableTd">
+        <div className="tableElement">{message.receiverN}</div>
+      </td> */}
+            <td className="messagesTableTd">
+              <div className="tableElement">{message.message}</div>
             </td>
           </tr>
-          <tr>
-            <th>dhRecPub</th>
-            <td>
-              <div className="tableElement">
-                {diffieHellmanReceiverPublic.toString()}
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <th>sender</th>
-            <td>
-              <div className="tableElement">{sender}</div>
-            </td>
-          </tr>
-          <tr>
-            <th>aesKey</th>
-            <td>
-              <div className="tableElement">{aesKey}</div>
-            </td>
-          </tr>
-          <tr>
-            <th>dhPriv</th>
-            <td>
-              <div className="tableElement">
-                {diffieHellmanPrivate.toString()}
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <th>dhPub</th>
-            <td>
-              <div className="tableElement">
-                {diffieHellmanPublic.toString()}
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <th>RecPub</th>
-            <td>
-              <div className="tableElement">
-                {diffieHellmanReceiverPublic.toString()}
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <th>Awaiting handshake response?</th>
-            <td>{waitingForHandshakeResponse ? "yes" : "no"}</td>
-          </tr>
-        </table>
-        <div style={{display: 'flex', alignItems: 'center' }}> 
-          <p style={{ fontWeight: "bold" }}>Address book:</p>
-          <span
-            className="editable-span"
-            contentEditable="true"
-            value={addressBook}
-            onInput={(e) => setAddressBook(e.target.textContent)}
-          ></span>
-          <button onClick={handleSubmitAddressBook}>Submit address book</button>
-        </div>
-        <div style={{display: 'flex', alignItems: 'center' }}> 
-          <p style={{ fontWeight: "bold" }}>Enter public RSA key:</p>
-          <span
-          contentEditable="true"
-          value={publicRSAKey}
-          className="editable-span"
-          onInput={(e) => setPublicRSAKey(BigInt(e.target.textContent))}
-          ></span>
-        </div>
-        <div style={{display: 'flex', alignItems: 'center' }}> 
-          <p style={{ fontWeight: "bold" }}>Enter private RSA key:</p>
-          <span
-          contentEditable="true"
-          value={privateRSAKey}
-          className="editable-span"
-          onInput={(e) => setPrivateRSAKey(BigInt(e.target.textContent))}
-          ></span>
-        </div>
-        <div style={{display: 'flex', alignItems: 'center' }}> 
-          <p style={{ fontWeight: "bold" }}>Enter n:</p>
-          <span
-          contentEditable="true"
-          className="editable-span"
-          value={n}
-          onInput={(e) => setN(BigInt(e.target.textContent))}
-          ></span>
-        </div>
-        <div>
-          <button
-            onClick={() => {
-              // generateKeys.
+        ))}
+      </tbody>
+    </table>
+  </div>
 
-              generateKeys().then((keys) => {
-                setN(keys.n);
-                setPrivateRSAKey(keys.d);
-                setPublicRSAKey(keys.e);
-              });
-            }}
-          >
-            Alternatively, click to generate new RSA keys
-          </button>
-        </div>
-        <div style={{display: 'flex', alignItems: 'center' }}> 
-          <p style={{ fontWeight: "bold" }}>Enter your username:</p>
-          <input 
-            style={{marginLeft: '10px', marginRight: '10px'}}
-            onChange={(e) => setSender(e.target.value)}
-          ></input>
-        </div>
+  {/* <p style={{ fontWeight: "bold" }}>Messages:</p>
+  {messages.map((msg, index) => (
+    <div key={index}>
+      {msg.publicRSA}-{msg.n} -&gt; {msg.receiverPublicRSA}-
+      {msg.receiverN}: {msg.message}
+      <br />
+    </div>
+  ))} */}
+</div>
+<div className="input-container">
+  <p style={{ fontWeight: "bold" }}>Enter receiver RSA public key:</p>
+  <span
+    className="editable-span"
+    contentEditable="true"
+    value={receiverRSAPub}
+    onInput={(e) => setReceiverRSAPub(e.target.textContent)}
+  ></span>
+  <p style={{ fontWeight: "bold" }}>Enter receiver n:</p>
+  <span
+    contentEditable="true"
+    value={receiverN}
+    className="editable-span"
+    onInput={(e) => setReceiverN(e.target.textContent)}
+  ></span>
+  <p style={{ fontWeight: "bold" }}>Enter Message:</p>
+  <span
+    contentEditable="true"
+    className="editable-span"
+    value={message}
+    onInput={(e) => setMessage(e.target.textContent)}
+  ></span>
+  <div>
+    <button onClick={handleSendMessage}>Send</button>
+  </div>
+</div>
+</div>
+<div className="Config">
+<h3>Configuration values</h3>
+<table className="configTable">
+  <tr>
+    <th className="configTableTh">public RSA key</th>
+    <td className="configTableTd">
+      <div className="tableElement">
+        {publicRSAKeyRef.current.toString()}
       </div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">private RSA key</th>
+    <td className="configTableTd">
+      <div className="tableElement">
+        {privateRSAKeyRef.current.toString()}
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">n</th>
+    <td className="configTableTd">
+      <div className="tableElement">{nRef.current.toString()}</div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">dhRecPub</th>
+    <td className="configTableTd">
+      <div className="tableElement">
+        {diffieHellmanReceiverPublic.toString()}
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">sender</th>
+    <td className="configTableTd">
+      <div className="tableElement">{sender}</div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">aesKey</th>
+    <td className="configTableTd">
+      <div className="tableElement">{aesKey}</div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">dhPriv</th>
+    <td className="configTableTd">
+      <div className="tableElement">
+        {diffieHellmanPrivate.toString()}
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">dhPub</th>
+    <td className="configTableTd">
+      <div className="tableElement">
+        {diffieHellmanPublic.toString()}
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">RecPub</th>
+    <td className="configTableTd">
+      <div className="tableElement">
+        {diffieHellmanReceiverPublic.toString()}
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <th className="configTableTh">Awaiting handshake response?</th>
+    <td className="configTableTd">
+      {waitingForHandshakeResponse ? "yes" : "no"}
+    </td>
+  </tr>
+</table>
+<div style={{ display: "flex", alignItems: "center" }}>
+  <p style={{ fontWeight: "bold" }}>Address book:</p>
+  <span
+    className="editable-span"
+    contentEditable="true"
+    value={addressBook}
+    onInput={(e) => setAddressBook(e.target.textContent)}
+  ></span>
+  <button onClick={handleSubmitAddressBook}>Submit address book</button>
+</div>
+<div style={{ display: "flex", alignItems: "center" }}>
+  <p style={{ fontWeight: "bold" }}>Enter public RSA key:</p>
+  <span
+    contentEditable="true"
+    value={publicRSAKey}
+    className="editable-span"
+    onInput={(e) => setPublicRSAKey(BigInt(e.target.textContent))}
+  ></span>
+</div>
+<div style={{ display: "flex", alignItems: "center" }}>
+  <p style={{ fontWeight: "bold" }}>Enter private RSA key:</p>
+  <span
+    contentEditable="true"
+    value={privateRSAKey}
+    className="editable-span"
+    onInput={(e) => setPrivateRSAKey(BigInt(e.target.textContent))}
+  ></span>
+</div>
+<div style={{ display: "flex", alignItems: "center" }}>
+  <p style={{ fontWeight: "bold" }}>Enter n:</p>
+  <span
+    contentEditable="true"
+    className="editable-span"
+    value={n}
+    onInput={(e) => setN(BigInt(e.target.textContent))}
+  ></span>
+</div>
+<div>
+  <button
+    onClick={() => {
+      // generateKeys.
+
+      generateKeys().then((keys) => {
+        setN(keys.n);
+        setPrivateRSAKey(keys.d);
+        setPublicRSAKey(keys.e);
+      });
+    }}
+  >
+    Alternatively, click to generate new RSA keys
+  </button>
+</div>
+<div style={{ display: "flex", alignItems: "center" }}>
+  <p style={{ fontWeight: "bold" }}>Enter your username:</p>
+  <input
+    style={{ marginLeft: "10px", marginRight: "10px", backgroundColor: '#bbe8bc' }}
+    onChange={(e) => setSender(e.target.value)}
+  ></input>
+</div>
+</div>
+      </div>
+      
     </div>
   );
 }

@@ -1,5 +1,20 @@
 .App {
   /* text-align: center; */
+  /* display: flex; */
+  background-color: #bbe8bc;
+
+}
+
+body {
+  background-color: #bbe8bc;
+}
+
+.head {
+  /* background-color: #4CAF50; */
+}
+
+.body {
+  /* text-align: center; */
   display: flex;
 }
 
@@ -18,7 +33,7 @@
 
 
 }
-table {
+.configTable {
   border-collapse: collapse;
   width: 100%;
   /* max-width: 600px; Adjust the maximum width as needed */
@@ -27,40 +42,62 @@ table {
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   border: 2px solid #384139; /* Add a border around the table */
-
-  /* word-wrap: break-word; */
+  background-color: #bbe8bc
 
 }
 
-th, td {
+.configTableTh, .configTableTd {
   padding: 12px 15px;
   text-align: left;
   border-bottom: 1px solid #dcdcdc;  
 }
 
-th {
+.configTableTh {
   background-color: #4CAF50;
   color: white;
   width: 1px;
 }
 
-td {
+.configTableTd {
   word-break: break-word; 
-  /* max-height: 60px; */
-  /* overflow-y: auto; */
 }
 
+
+.messagesTable {
+  border-collapse: collapse;
+  width: 100%; 
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid #384139; /* Add a border around the table */
+  background-color: #bbe8bc;
+
+}
+
+.messagesTableTh {
+  background-color: #4CAF50;
+  color: white;
+  width: 1px;
+}
+
+.messagesTableTd {
+  word-break: break-word; 
+}
+
+
 tr:nth-child(even) {
-  background-color: #f2f2f2;
+  /* background-color: #f2f2f2; */
+  background-color: #a4d5a5
+
 }
 
 tr:hover {
-  background-color: #e0e0e0;
+  background-color: #8ee391;
 }
 
 .tableElement {
   width: 100%;
-  max-height: 80px;
+  max-height: 50px;
   overflow: auto;
 }
 
