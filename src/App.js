@@ -313,6 +313,21 @@ function App() {
             message.sign = sign.toString();
             message.publicRSA = publicRSAKeyRef.current.toString();
             message.n = nRef.current.toString();
+
+            // let record = `${receiverRSAPubRef.current}+${rece}`;
+            // if (rece)
+
+            for (const record in contactsRef.current) {
+              console.log('record', record)
+              if (contactsRef.current[record] === receiverRSAPubRef.current.toString()) {
+                console.log('found!')
+                const parts = record.split('+');
+                message.receiverPublicRSA = parts[0]
+                message.receiverN = parts[1]
+              }
+            }
+
+
             socket.emit("sendMessage", message);
           });
         })
@@ -346,6 +361,15 @@ function App() {
     message.sign = sign.toString();
     message.publicRSA = publicRSAKeyRef.current.toString();
     message.n = nRef.current.toString();
+    for (const record in contactsRef.current) {
+      console.log('record', record)
+      if (contactsRef.current[record] === receiverRSAPubRef.current.toString()) {
+        console.log('found!')
+        const parts = record.split('+');
+        message.receiverPublicRSA = parts[0]
+        message.receiverN = parts[1]
+      }
+    }
     socket.emit("sendMessage", message);
     return;
 
@@ -433,6 +457,16 @@ function App() {
         }
       };
       socket.on("broadcastMessage", broadcastListener);
+      
+      for (const record in contactsRef.current) {
+        console.log('record', record)
+        if (contactsRef.current[record] === receiverRSAPubRef.current.toString()) {
+          console.log('found!')
+          const parts = record.split('+');
+          handshakeMessage.receiverPublicRSA = parts[0]
+          handshakeMessage.receiverN = parts[1]
+        }
+      }
 
       socket.emit("sendMessage", handshakeMessage);
       console.log("we sent this message", handshakeMessage);
