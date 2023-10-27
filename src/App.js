@@ -179,7 +179,7 @@ function App() {
           setDiffieHellmanPrivate(dh.aBigInt);
           setDiffieHellmanPublic(dh.A);
           const message = {
-            sender: senderRef.current,
+            // sender: senderRef.current,
             receiverN: msg.n,
             receiverPublicRSA: msg.publicRSA,
             message: dh.A.toString(),
@@ -237,8 +237,8 @@ function App() {
 
         // this code isnt relevant anymore i think, since we do dh handshake every message (conectionEstablishedWIth will always be '' so this code will be no executed)
         const message = {
-          sender: senderRef.current,
-          receiver: connectionEstablishedWithRef.current,
+          // sender: senderRef.current,
+          // receiver: connectionEstablishedWithRef.current,
           message: aes256.encrypt(aesKeyRef.current, "seashells_end"),
           handshake: true,
         };
@@ -261,7 +261,7 @@ function App() {
       setDiffieHellmanPublic(dh.A);
 
       const handshakeMessage = {
-        sender: senderRef.current,
+        // sender: senderRef.current,
         receiverN: receiverNRef.current,
         receiverPublicRSA: receiverRSAPubRef.current,
         message: dh.A.toString(),
@@ -303,7 +303,7 @@ function App() {
             console.log("encryptedmessage", encryptedMessage);
 
             const message = {
-              sender: senderRef.current,
+              // sender: senderRef.current,
               receiverN: receiverNRef.current,
               receiverPublicRSA: receiverRSAPubRef.current,
               // receiver: receiverRef.current,
@@ -353,7 +353,7 @@ function App() {
     console.log("encryptedmessage", encryptedMessage);
 
     const message = {
-      sender: senderRef.current,
+      // sender: senderRef.current,
       // receiver: receiverRef.current,
       receiverN: receiverNRef.current,
       receiverPublicRSA: receiverRSAPubRef.current,
