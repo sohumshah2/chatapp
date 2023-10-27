@@ -124,6 +124,12 @@ function App() {
             msg.n = "";
           }
 
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, '0');
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const seconds = now.getSeconds().toString().padStart(2, '0');
+          const formattedTime = `${hours}:${minutes}:${seconds}`;
+          msg.time = formattedTime
           setMessages((prevMessages) => [...prevMessages, msg]);
         } else {
           console.log("wa wa wa wa wa wa wa wa wa wa wa wa wa");
@@ -538,6 +544,7 @@ function App() {
         <tr>
           <th className="messagesTableTh">Sender</th>
           <th className="messagesTableTh">Receiver</th>
+          <th className="messagesTableTh">Time</th>
           {/* <th className="messagesTableTh">Public RSA</th>
     <th className="messagesTableTh">n</th> */}
           {/* <th className="messagesTableTh">Receiver Public RSA</th>
@@ -556,6 +563,11 @@ function App() {
             <td className="messagesTableTd">
               <div className="tableElement">
                 {message.receiverPublicRSA} {message.receiverN}
+              </div>
+            </td>
+            <td className="messagesTableTd">
+              <div className="tableElement">
+                {message.time}
               </div>
             </td>
             {/* <td className="messagesTableTd">
@@ -590,28 +602,31 @@ function App() {
 </div>
 <div className="input-container">
   <p style={{ fontWeight: "bold" }}>Enter receiver RSA public key:</p>
-  <span
+  {/* <span
     className="editable-span"
     contentEditable="true"
     value={receiverRSAPub}
     onInput={(e) => setReceiverRSAPub(e.target.textContent)}
-  ></span>
+  ></span> */}
+  <input
+    className="input"
+    onChange={(e) => setReceiverRSAPub(e.target.value)}
+  ></input>
   <p style={{ fontWeight: "bold" }}>Enter receiver n:</p>
-  <span
-    contentEditable="true"
-    value={receiverN}
-    className="editable-span"
-    onInput={(e) => setReceiverN(e.target.textContent)}
-  ></span>
+  <input
+    className="input"
+    onChange={(e) => setReceiverN(e.target.value)}
+  ></input>
   <p style={{ fontWeight: "bold" }}>Enter Message:</p>
   <span
     contentEditable="true"
     className="editable-span"
     value={message}
     onInput={(e) => setMessage(e.target.textContent)}
+    // className="input"
   ></span>
   <div>
-    <button onClick={handleSendMessage}>Send</button>
+    <button onClick={handleSendMessage} className="button">Send message</button>
   </div>
 </div>
 </div>
@@ -627,17 +642,17 @@ function App() {
     </td>
   </tr>
   <tr>
+    <th className="configTableTh">n</th>
+    <td className="configTableTd">
+      <div className="tableElement">{nRef.current.toString()}</div>
+    </td>
+  </tr>
+  <tr>
     <th className="configTableTh">private RSA key</th>
     <td className="configTableTd">
       <div className="tableElement">
         {privateRSAKeyRef.current.toString()}
       </div>
-    </td>
-  </tr>
-  <tr>
-    <th className="configTableTh">n</th>
-    <td className="configTableTd">
-      <div className="tableElement">{nRef.current.toString()}</div>
     </td>
   </tr>
   <tr>
@@ -693,43 +708,35 @@ function App() {
 </table>
 <div style={{ display: "flex", alignItems: "center" }}>
   <p style={{ fontWeight: "bold" }}>Address book:</p>
-  <span
-    className="editable-span"
-    contentEditable="true"
-    value={addressBook}
-    onInput={(e) => setAddressBook(e.target.textContent)}
-  ></span>
-  <button onClick={handleSubmitAddressBook}>Submit address book</button>
+  <input
+    className="input"
+    onChange={(e) => setAddressBook(e.target.value)}
+  ></input>
+  <button className="button" onClick={handleSubmitAddressBook}>Submit address book</button>
 </div>
 <div style={{ display: "flex", alignItems: "center" }}>
   <p style={{ fontWeight: "bold" }}>Enter public RSA key:</p>
-  <span
-    contentEditable="true"
-    value={publicRSAKey}
-    className="editable-span"
-    onInput={(e) => setPublicRSAKey(BigInt(e.target.textContent))}
-  ></span>
+  <input
+    className="input"
+    onChange={(e) => setPublicRSAKey(BigInt(e.target.value))}
+  ></input>
 </div>
 <div style={{ display: "flex", alignItems: "center" }}>
   <p style={{ fontWeight: "bold" }}>Enter private RSA key:</p>
-  <span
-    contentEditable="true"
-    value={privateRSAKey}
-    className="editable-span"
-    onInput={(e) => setPrivateRSAKey(BigInt(e.target.textContent))}
-  ></span>
+  <input
+    className="input"
+    onChange={(e) => setPrivateRSAKey(BigInt(e.target.value))}
+  ></input>
 </div>
 <div style={{ display: "flex", alignItems: "center" }}>
   <p style={{ fontWeight: "bold" }}>Enter n:</p>
-  <span
-    contentEditable="true"
-    className="editable-span"
-    value={n}
-    onInput={(e) => setN(BigInt(e.target.textContent))}
-  ></span>
+  <input
+    className="input"
+    onChange={(e) => setN(BigInt(e.target.value))}
+  ></input>
 </div>
 <div>
-  <button
+  <button className="button"
     onClick={() => {
       // generateKeys.
 
@@ -746,7 +753,7 @@ function App() {
 <div style={{ display: "flex", alignItems: "center" }}>
   <p style={{ fontWeight: "bold" }}>Enter your username:</p>
   <input
-    style={{ marginLeft: "10px", marginRight: "10px", backgroundColor: '#bbe8bc' }}
+    className="input"
     onChange={(e) => setSender(e.target.value)}
   ></input>
 </div>

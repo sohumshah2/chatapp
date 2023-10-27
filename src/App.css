@@ -82,6 +82,8 @@ body {
 
 .messagesTableTd {
   word-break: break-word; 
+  text-align: center;
+
 }
 
 
@@ -99,6 +101,33 @@ tr:hover {
   width: 100%;
   max-height: 50px;
   overflow: auto;
+}
+
+.input {
+  margin-left: 10px;
+  max-width: 80%;
+
+  margin-right: 10px;
+  background-color: #bbe8bc;
+
+
+  border: 2px solid #000000;
+  border-radius: 5px;
+  padding: 10px;
+  /* font-size: 16px; */
+  background-color: #bbe8bc;
+  color: #333;
+  width: 100%;
+  transition: border-color 0.3s, box-shadow 0.1s;
+    
+
+
+}
+
+.input:focus {
+  /* border-width: 3px; */
+  /* border-color: #4CAF50; */
+  /* box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); */
 }
 
 
@@ -124,6 +153,60 @@ tr:hover {
   color: white;
 }
 
+.button {
+  background-color: #64b067; /* Green background color */
+  color: white; /* Text color */
+  margin: 10px;
+  padding: 10px 20px; /* Adjust padding as needed */
+  border: none; /* Remove default button border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s; /* Smooth hover transition */
+}
+
+.button:hover {
+  background-color: #2d572d; /* Slightly darker green on hover */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Add a shadow on hover */
+}
+
+
+.button:active {
+  background-color: #232a23; /* Darker green while the button is clicked */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* Reduce shadow on click */
+}
+
+
+
+
+/* Track (the area the scrollbar moves within) */
+::-webkit-scrollbar {
+  width: 6px; /* Set the width of the scrollbar */
+}
+
+/* Thumb (the draggable part of the scrollbar) */
+::-webkit-scrollbar-thumb {
+  background: #4CAF50; /* Color of the thumb */
+  border-radius: 6px; /* Round the corners of the thumb */
+}
+
+/* Track on hover */
+::-webkit-scrollbar-track:hover {
+  /* background: #ddd;  */
+}
+
+/* Button (the buttons at the top and bottom of the scrollbar) */
+::-webkit-scrollbar-button {
+  /* background: #999; / */
+}
+
+/* Corner (the space where the vertical and horizontal scrollbars meet) */
+::-webkit-scrollbar-corner {
+  background: #f2f2f2;
+}
+
+
+
+
 .App-link {
   color: #61dafb;
 }
@@ -140,8 +223,22 @@ tr:hover {
 .editable-span {
   display: inline-block;
   border: 1px solid black;
-  min-width: 100px;
-  max-width: 200px;
-  margin-left: 10px; 
-  margin-right: 10px; 
+  min-width: 1px;
+  max-width: 80%;
+
+
+  margin-left: 10px;
+  margin-right: 10px;
+  background-color: #bbe8bc;
+
+
+  border: 2px solid #000000;
+  border-radius: 5px;
+  padding: 10px;
+  /* font-size: 16px; */
+  background-color: #bbe8bc;
+  color: #333;
+  width: 100%;
+  transition: border-color 0.3s, box-shadow 0.1s;
+
 }
