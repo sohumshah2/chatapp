@@ -29,7 +29,7 @@ const compute = (base, decomposedPower, mod) => {
     let i = 1
 
     while (i <= decomposedPower[decomposedPower.length - 1]) {
-        prev = (BigInt(prev) ** BigInt(2)) % BigInt(mod)
+        prev = (BigInt(prev) * BigInt(prev)) % BigInt(mod)
         if (decomposedPower[j] === i) {
             res = (res * prev) % mod
         }

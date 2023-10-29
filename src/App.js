@@ -531,7 +531,7 @@ function App() {
   return (
     <div className="App">
       <div className="head">
-          <h1>E2Elevation: Elevating your conversations with end to end encryption</h1>
+          <h1>E2Elevate: Elevate your conversations with end to end encryption</h1>
         </div>
       <div className="body">
       <div className="Messages">
