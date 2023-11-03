@@ -131,6 +131,7 @@ function App() {
           const formattedTime = `${hours}:${minutes}:${seconds}`;
           msg.time = formattedTime
           setMessages((prevMessages) => [...prevMessages, msg]);
+          setAesKey(aesKeyRef.current + ' ')
         } else {
           console.log("wa wa wa wa wa wa wa wa wa wa wa wa wa");
         }
