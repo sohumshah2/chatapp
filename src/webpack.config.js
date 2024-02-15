@@ -1,15 +1,20 @@
-// const path = require('path');
+module.exports = {
+  webpack: {
+    configure: (webpackConfig) => {
+      const scopePluginIndex = webpackConfig.resolve.plugins.findIndex(
+        ({ constructor }) =>
+          constructor && constructor.name === "ModuleScopePlugin"
+      );
 
-// module.exports = {
-//   entry: './src/index.js', // Your entry point file
-//   output: {
-//     filename: 'bundle.js',
-//     path: path.resolve(__dirname, 'dist'),
-//   },
-//   resolve: {
-//     fallback: {
-//       "crypto": require.resolve("crypto-browserify")
-//     }
-//   },
-//   // Add your other Webpack configuration options here
-// };
+      webpackConfig.resolve.plugins.splice(scopePluginIndex, 1);
+      webpackConfig["resolve"] = {
+        fallback: {
+          path: require.resolve("path-browserify"),
+          crypto: require.resolve("crypto-browserify"),
+          stream: require.resolve("stream-browserify"),
+        },
+      };
+      return webpackConfig;
+    },
+  },
+};

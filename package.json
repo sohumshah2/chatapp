@@ -17,8 +17,9 @@
     "get-large-prime": "^1.0.3",
     "js-crypto-hkdf": "^1.0.7",
     "react": "^18.2.0",
+    "react-app-rewired": "^2.2.1",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "react-usestateref": "^1.0.8",
     "secure-random": "^1.1.2",
     "socket.io": "^4.7.2",
@@ -30,9 +31,9 @@
     "crypto": false
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
