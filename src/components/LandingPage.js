@@ -19,28 +19,28 @@ function LandingPage({ scrollToChatApp }) {
           />
         </div>
       </div>
+
       <div className="feature-section">
-        <div className="image-container">
+        <div className="feature-box">
           <img src="config.png" alt="config" />
-          <img src="public.png" alt="Feature" />
-          <img src="send.png" alt="Feature 1" />
+          <h2>Step 1</h2>
+          <p>
+            Set your public and private RSA keys. You can share your public key
+            and receive messages.
+          </p>
         </div>
-        <div className="content-container">
-          <div className="feature-box">
-            <h2>Step 1</h2>
-            <p>Set your public and private RSA keys.</p>
-          </div>
-          <div className="feature-box">
-            <h2>Step 2</h2>
-            <p>Enter your intended recipient's public RSA key.</p>
-          </div>
-          <div className="feature-box">
-            <h2>Step 3</h2>
-            <p>
-              Type a message and hit send. E2Elevate will ensure your messages
-              are sent securely.
-            </p>
-          </div>
+        <div className="feature-box">
+          <img src="public.png" alt="config" />
+          <h2>Step 2</h2>
+          <p>To send a message, enter the recipient's public RSA key.</p>
+        </div>
+        <div className="feature-box">
+          <img src="send.png" alt="config" />
+          <h2>Step 3</h2>
+          <p>
+            Type a message and hit send. E2Elevate will ensure your messages are
+            sent securely.
+          </p>
         </div>
       </div>
     </div>
