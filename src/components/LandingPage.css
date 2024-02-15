@@ -1,36 +1,82 @@
-.landing-page {
-  background-color: #f0f0f0;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* This makes the div take the full height of the viewport */
-  padding: 20px;
-  margin: 0;
+/* LandingPage.css */
+.container {
+  height: 100vh;
+  background-color: white;
 }
 
-h1 {
-  font-size: 2em;
+.hero-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 50px;
+  margin-bottom: 50px;
+}
+
+.hero-content {
+  flex: 1;
+}
+
+.hero-image {
+  padding-left: 10px;
+  flex: 1;
+  text-align: center;
+}
+
+.hero-image img {
+  max-width: 100%;
+}
+
+.hero-content h1 {
+  font-size: 46px;
+  margin-bottom: 10px;
+}
+
+.hero-content p {
+  font-size: 24px;
   margin-bottom: 20px;
 }
-
-p {
-  font-size: 1.2em;
-  margin-bottom: 30px;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 1em;
-  background-color: #007bff;
+.hero-content button {
+  background-color: #7b00ff;
   color: #fff;
-  border: none;
-  border-radius: 5px;
+  border: none; /* Remove border */
+  padding: 10px 20px;
+  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  border-radius: 8px; /* Add border radius */
 }
 
-button:hover {
-  background-color: #0056b3;
+.hero-content button:hover {
+  background-color: #5a00b3; /* Darken color on hover */
+}
+
+/* Add styles for feature section */
+.feature-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.image-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+  align-items: center;
+}
+
+.image-container img {
+  width: 150px;
+  margin-right: 20px;
+}
+
+.content-container {
+  display: flex;
+  flex-direction: row;
+  margin: 20px;
+}
+
+.feature-box {
+  margin-bottom: 20px; /* Adjust as needed */
+  flex: 1; /* Make all feature boxes equally sized */
 }

@@ -1,0 +1,39 @@
+/* NavBar.css */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  color: #333; /* Text color changed to dark */
+  padding: 10px 20px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Adding a subtle shadow */
+}
+
+.navbar-left {
+  flex: 1;
+}
+
+.website-name {
+  font-size: 24px; /* Increase font size for prominence */
+  font-family: "Roboto", sans-serif; /* Applying a different font */
+  font-weight: bold; /* Making the font bold */
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center; /* Aligning links vertically in the center */
+}
+
+.nav-link {
+  color: #333; /* Text color changed to dark */
+  text-decoration: none; /* Remove underline from links */
+  padding: 10px 20px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  background-color: #eee; /* Lightening link background on hover */
+  border-radius: 5px; /* Adding some border radius for a softer look */
+}
