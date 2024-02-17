@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ChatAppOld from "./ChatAppOld";
-import Login from "./Login";
+import Setup from "./Setup";
 import "./ChatApp.css";
 import LandingPage from "./LandingPage";
 
@@ -13,11 +13,10 @@ const ChatApp = () => {
 
   return (
     <div className="chatapp-container">
-      {!isLoggedIn && <Login onLogin={handleLogin} />}
-      <div className="content blur">
-        {/* <div className={isLoggedIn ? "content" : "content blur"}> */}
+      {!isLoggedIn && <Setup onLogin={handleLogin} />}
+      <div className={isLoggedIn ? "content" : "content blur"}>
         {/* <ChatAppOld /> Temporary */}
-        <LandingPage />
+        <LandingPage /> {/* Temporary */}
       </div>
     </div>
   );
