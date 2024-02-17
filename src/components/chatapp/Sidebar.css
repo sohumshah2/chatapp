@@ -27,4 +27,5 @@
 
 .security-log li {
   padding: 5px 0;
+  white-space: nowrap;
 }

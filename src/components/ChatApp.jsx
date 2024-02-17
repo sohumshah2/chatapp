@@ -19,12 +19,19 @@ import { generateKeys, hashAndEncrypt, confirmWhetherMatch } from "../rsa";
 const ChatApp = () => {
   const [isSetupCompleted, setIsSetupCompleted] = useState(false);
   const [rsaKeys, setRSAKeys, rsaKeysRef] = useState({ d: "", e: "", n: "" });
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [currentUserId, setCurrentUserId, currentUserIdRef] = useState("");
   const [currentUsername, setCurrentUsername] = useState("");
   const [securityLog, setSecurityLog] = useState([]);
   const [aesKey, setAesKey, aesKeyRef] = useState("");
+  const [messageInput, setMessageInput] = useState("");
+  const [
+    waitingForHandshakeReply,
+    setWaitingForHandshakeReply,
+    waitingForHandshakeReplyRef,
+  ] = useState(false);
 
   const updateSecurityLog = (event) => {
+    event = new Date().toLocaleTimeString() + " - " + event;
     setSecurityLog((prevLog) => [...prevLog, event]);
   };
 
@@ -40,6 +47,13 @@ const ChatApp = () => {
     console.log("setup listener again");
     socket.on("broadcastMessage", (msg) => {
       console.log("received a new msg", msg);
+
+      if (waitingForHandshakeReplyRef.current) {
+        console.log("ignored message");
+        return;
+      } else {
+        console.log("waiting for handshake reply is FALSE");
+      }
 
       // Check whether the message really is sent by the supposed sender (the given public key, n)
       const receivedHash = msg.sign;
@@ -76,34 +90,40 @@ const ChatApp = () => {
           (msg.receiverPublicRSA === rsaKeysRef.current.e &&
             msg.receiverN === rsaKeysRef.current.n))
       ) {
-        // If we are the message's recipient
-        if (
-          msg.receiverPublicRSA === rsaKeysRef.current.e &&
-          msg.receiverN === rsaKeysRef.current.n
-        ) {
-          updateSecurityLog("Received a message");
+        const weSentMessage =
+          msg.publicRSA === rsaKeysRef.current.e &&
+          msg.n === rsaKeysRef.current.n;
 
-          // Decrypt the message
-          let decryptedMessage = aes256.decrypt(aesKeyRef.current, msg.message);
-          updateSecurityLog("Decrypted the message");
+        if (!weSentMessage) updateSecurityLog("Received a message");
 
-          if (!decryptedMessage.startsWith("seashells_")) {
+        // Decrypt the message
+        let decryptedMessage = aes256.decrypt(aesKeyRef.current, msg.message);
+        if (!weSentMessage) updateSecurityLog("Decrypted the message");
+
+        if (!decryptedMessage.startsWith("seashells_")) {
+          if (!weSentMessage)
             updateSecurityLog("Ignored fradulent spam message");
-          } else {
+        } else {
+          if (!weSentMessage)
             updateSecurityLog("Confirmed the message is genuine");
-            decryptedMessage = decryptedMessage.slice(10);
-            msg.message = decryptedMessage;
+          decryptedMessage = decryptedMessage.slice(10);
+          msg.message = decryptedMessage;
 
-            // Store the time the message was received
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, "0");
-            const minutes = now.getMinutes().toString().padStart(2, "0");
-            const seconds = now.getSeconds().toString().padStart(2, "0");
-            const formattedTime = `${hours}:${minutes}:${seconds}`;
-            msg.time = formattedTime;
+          // Store the time the message was received
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, "0");
+          const minutes = now.getMinutes().toString().padStart(2, "0");
+          const seconds = now.getSeconds().toString().padStart(2, "0");
+          const formattedTime = `${hours}:${minutes}:${seconds}`;
+          msg.time = formattedTime;
 
-            // Store the message so it can be displayed
+          // Store the message so it can be displayed
+
+          // If we are the message recipient, store the message accordingly
+          if (!weSentMessage) {
             const senderId = msg.publicRSA + " " + msg.n;
+
+            // If the sender is not already in the chat list, add them
             if (!messagesRef.current[senderId]) {
               setMessages((prevMessages) => {
                 prevMessages[senderId] = [];
@@ -121,6 +141,7 @@ const ChatApp = () => {
               });
             }
 
+            // Add the message to the chat with the sender
             setMessages((prevMessages) => {
               prevMessages[senderId].push({
                 message: msg.message,
@@ -130,6 +151,7 @@ const ChatApp = () => {
               return prevMessages;
             });
 
+            // Update the last message in the chat list
             setChats((prevChats) => {
               prevChats.find((chat) => chat.name === senderId).lastMessage =
                 msg.message.length > 20
@@ -138,6 +160,50 @@ const ChatApp = () => {
 
               return prevChats;
             });
+            if (!weSentMessage)
+              updateSecurityLog("Message can be viewed in the chat");
+
+            // If we are the message sender, store the message accordingly
+          } else {
+            const receiverId = msg.receiverPublicRSA + " " + msg.receiverN;
+            // If the recipient is not already in the chat list, add them
+            if (!messagesRef.current[receiverId]) {
+              setMessages((prevMessages) => {
+                prevMessages[receiverId] = [];
+                return prevMessages;
+              });
+
+              setChats((prevChats) => {
+                return prevChats.concat({
+                  name: receiverId,
+                  lastMessage: msg.message,
+                  rsa_e: msg.publicRSA,
+                  rsa_n: msg.n,
+                  imgSrc: "",
+                });
+              });
+            }
+
+            // Add the message to the chat with the recipient
+            setMessages((prevMessages) => {
+              prevMessages[receiverId].push({
+                message: msg.message,
+                time: msg.time,
+                mine: true,
+              });
+              return prevMessages;
+            });
+
+            // Update the last message in the chat list
+            setChats((prevChats) => {
+              prevChats.find((chat) => chat.name === receiverId).lastMessage =
+                msg.message.length > 20
+                  ? msg.message.slice(0, 20) + "..."
+                  : msg.message;
+
+              return prevChats;
+            });
+            updateSecurityLog("Message successfully sent");
           }
         }
 
@@ -187,6 +253,8 @@ const ChatApp = () => {
 
           // Send the handshake reply message
           socket.emit("sendMessage", message);
+          console.log("SENDING MESSAGE 3");
+
           updateSecurityLog(
             "Sent a handshake reply message with the generated DH public key"
           );
@@ -194,17 +262,14 @@ const ChatApp = () => {
       }
     });
 
-    return () => {
-      // socket.off("broadcastMessage")
-    };
+    return () => {};
   }, []);
 
   const handleSubmit = (keys) => {
     setRSAKeys(keys);
     setIsSetupCompleted(true);
+    updateSecurityLog("RSA keys set");
   };
-
-  console.log(currentUsername);
 
   return (
     <div className="container">
@@ -224,6 +289,14 @@ const ChatApp = () => {
           currentUserId={currentUserId}
           currentUsername={currentUsername}
           messages={messages}
+          messageInput={messageInput}
+          setMessageInput={setMessageInput}
+          updateSecurityLog={updateSecurityLog}
+          rsaKeysRef={rsaKeysRef}
+          socket={socket}
+          setWaitingForHandshakeReply={setWaitingForHandshakeReply}
+          setAesKey={setAesKey}
+          aesKeyRef={aesKeyRef}
         />
       </div>
     </div>

@@ -3,7 +3,19 @@ import "./Chat.css";
 import Messages from "./Messages";
 import Input from "./Input";
 
-const Chat = ({ currentUserId, currentUsername, messages }) => {
+const Chat = ({
+  currentUserId,
+  currentUsername,
+  messages,
+  messageInput,
+  setMessageInput,
+  updateSecurityLog,
+  rsaKeysRef,
+  socket,
+  setWaitingForHandshakeReply,
+  setAesKey,
+  aesKeyRef,
+}) => {
   return (
     <div className="chat">
       <div className="chatInfo">
@@ -14,7 +26,17 @@ const Chat = ({ currentUserId, currentUsername, messages }) => {
         </span>
       </div>
       <Messages currentUserId={currentUserId} messages={messages} />
-      <Input />
+      <Input
+        messageInput={messageInput}
+        setMessageInput={setMessageInput}
+        updateSecurityLog={updateSecurityLog}
+        rsaKeysRef={rsaKeysRef}
+        socket={socket}
+        currentUserId={currentUserId}
+        setWaitingForHandshakeReply={setWaitingForHandshakeReply}
+        setAesKey={setAesKey}
+        aesKeyRef={aesKeyRef}
+      />
     </div>
   );
 };
