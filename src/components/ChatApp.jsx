@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import ChatAppOld from "./ChatAppOld";
+// import ChatAppOld from "./ChatAppOld";
 import Setup from "./Setup";
 import "./ChatApp.css";
 import LandingPage from "./LandingPage";
+import Sidebar from "./chatapp/Sidebar";
+import Chat from "./chatapp/Chat";
 
 const ChatApp = () => {
   const [isSetupCompleted, setIsSetupCompleted] = useState(false);
@@ -14,11 +16,12 @@ const ChatApp = () => {
   };
 
   return (
-    <div className="chatapp-container">
+    <div className="container">
       {!isSetupCompleted && <Setup onSubmit={handleSubmit} />}
       <div className={isSetupCompleted ? "content" : "content blur"}>
-        {/* <ChatAppOld /> Temporary */}
-        <LandingPage /> {/* Temporary */}
+        {/* <LandingPage /> */}
+        <Sidebar className="sidebar" />
+        <Chat className="chat" />
       </div>
     </div>
   );
