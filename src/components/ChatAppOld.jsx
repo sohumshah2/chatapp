@@ -6,7 +6,7 @@ import useState from "react-usestateref";
 import { Buffer } from "buffer";
 import { generateKeyToSend, computeSymmetricKey } from "../diffieHellman";
 import { generateKeys, hashAndEncrypt, confirmWhetherMatch } from "../rsa";
-import "./ChatApp.css";
+import "./ChatAppOld.css";
 
 /* global BigInt */
 // const { BigInt } = globalThis;
@@ -22,7 +22,7 @@ const socket = io("https://chatappserver-ucb7.onrender.com"); // Replace with yo
 //   transports: ["websocket"],
 // });
 
-function ChatApp() {
+function ChatAppOld() {
   const [messages, setMessages] = useState([]);
   const [diffieHellmanPublic, setDiffieHellmanPublic] = useState("");
   const [diffieHellmanReceiverPublic, setDiffieHellmanReceiverPublic] =
@@ -768,4 +768,4 @@ function ChatApp() {
   );
 }
 
-export default ChatApp;
+export default ChatAppOld;

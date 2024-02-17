@@ -1,3 +1,4 @@
+import ChatAppOld from "./components/ChatAppOld";
 import ChatApp from "./components/ChatApp";
 import LandingPage from "./components/LandingPage";
 import React, { useRef } from "react";
@@ -13,6 +14,7 @@ function App() {
       <LandingPage scrollToChatApp={scrollToChatApp} />
       <div ref={chatAppRef}>
         <ChatApp />
+        {/* <ChatAppOld /> */}
       </div>
     </div>
   );
