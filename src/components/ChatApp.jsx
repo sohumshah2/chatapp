@@ -9,6 +9,7 @@ import Chat from "./chatapp/Chat";
 const ChatApp = () => {
   const [isSetupCompleted, setIsSetupCompleted] = useState(false);
   const [rsaKeys, setRSAKeys] = useState({ d: "", e: "", n: "" });
+  const [currentUserId, setCurrentUserId] = useState("");
 
   const handleSubmit = (keys) => {
     setRSAKeys(keys);
@@ -20,8 +21,12 @@ const ChatApp = () => {
       {!isSetupCompleted && <Setup onSubmit={handleSubmit} />}
       <div className={isSetupCompleted ? "content" : "content blur"}>
         {/* <LandingPage /> */}
-        <Sidebar className="sidebar" />
-        <Chat className="chat" />
+        <Sidebar
+          className="sidebar"
+          currentUserId={currentUserId}
+          setCurrentUserId={setCurrentUserId}
+        />
+        <Chat className="chat" currentUserId={currentUserId} />
       </div>
     </div>
   );

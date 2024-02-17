@@ -1,14 +1,14 @@
 import React from "react";
 import "./Message.css";
 
-const Message = () => {
+const Message = ({ message, time, mine }) => {
   return (
-    <div className="message owner">
+    <div className={`message ${mine ? "owner" : ""}`}>
       <div className="messageInfo">
-        <span>just now</span>
+        <span>{time}</span>
       </div>
       <div className="messageContent">
-        <p>hello</p>
+        <p>{message}</p>
       </div>
     </div>
   );
