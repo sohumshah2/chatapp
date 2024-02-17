@@ -10,11 +10,14 @@ const ChatApp = () => {
   const [isSetupCompleted, setIsSetupCompleted] = useState(false);
   const [rsaKeys, setRSAKeys] = useState({ d: "", e: "", n: "" });
   const [currentUserId, setCurrentUserId] = useState("");
+  const [currentUsername, setCurrentUsername] = useState("");
 
   const handleSubmit = (keys) => {
     setRSAKeys(keys);
     setIsSetupCompleted(true);
   };
+
+  console.log(currentUsername);
 
   return (
     <div className="container">
@@ -25,8 +28,13 @@ const ChatApp = () => {
           className="sidebar"
           currentUserId={currentUserId}
           setCurrentUserId={setCurrentUserId}
+          setCurrentUsername={setCurrentUsername}
         />
-        <Chat className="chat" currentUserId={currentUserId} />
+        <Chat
+          className="chat"
+          currentUserId={currentUserId}
+          currentUsername={currentUsername}
+        />
       </div>
     </div>
   );

@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import "./Chats.css";
 
-const Chats = ({ currentUserId, setCurrentUserId }) => {
-  const handleChatClick = (chatId) => {
+const Chats = ({ currentUserId, setCurrentUserId, setCurrentUsername }) => {
+  const handleChatClick = (chatId, chatName) => {
     console.log(chatId);
     setCurrentUserId(chatId);
+    setCurrentUsername(chatName);
   };
 
   // temporary data
   const chats = [
     {
-      name: "12323",
+      name: "123 123",
       lastMessage: "hey",
       rsa_e: "123",
       rsa_n: "123",
@@ -24,7 +25,7 @@ const Chats = ({ currentUserId, setCurrentUserId }) => {
       imgSrc: "",
     },
     {
-      name: "4343",
+      name: "12345 123",
       lastMessage: "hello",
       rsa_e: "12345",
       rsa_n: "123",
@@ -40,7 +41,9 @@ const Chats = ({ currentUserId, setCurrentUserId }) => {
             chat.rsa_e + " " + chat.rsa_n === currentUserId ? "selected" : ""
           }`}
           key={chat.rsa_e + " " + chat.rsa_n}
-          onClick={() => handleChatClick(chat.rsa_e + " " + chat.rsa_n)}
+          onClick={() =>
+            handleChatClick(chat.rsa_e + " " + chat.rsa_n, chat.name)
+          }
         >
           <img src={chat.imgSrc} />
           <div className="userChatInfo">
