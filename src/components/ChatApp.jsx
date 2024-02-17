@@ -5,16 +5,18 @@ import "./ChatApp.css";
 import LandingPage from "./LandingPage";
 
 const ChatApp = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSetupCompleted, setIsSetupCompleted] = useState(false);
+  const [rsaKeys, setRSAKeys] = useState({ d: "", e: "", n: "" });
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
+  const handleSubmit = (keys) => {
+    setRSAKeys(keys);
+    setIsSetupCompleted(true);
   };
 
   return (
     <div className="chatapp-container">
-      {!isLoggedIn && <Setup onLogin={handleLogin} />}
-      <div className={isLoggedIn ? "content" : "content blur"}>
+      {!isSetupCompleted && <Setup onSubmit={handleSubmit} />}
+      <div className={isSetupCompleted ? "content" : "content blur"}>
         {/* <ChatAppOld /> Temporary */}
         <LandingPage /> {/* Temporary */}
       </div>
