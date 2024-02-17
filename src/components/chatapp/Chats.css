@@ -31,3 +31,9 @@
   font-size: 14px;
   color: lightgray;
 }
+
+.userChatInfo {
+  flex: 1;
+  overflow-x: auto;
+  white-space: nowrap;
+}

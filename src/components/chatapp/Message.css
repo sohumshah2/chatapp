@@ -10,9 +10,11 @@
     }
 
     .messageContent p {
-      background-color: #7b00ff;
-      color: white;
-      border-radius: 10px 0px 10px 10px;
+      background-color: white;
+      padding: 10px 20px;
+      border-radius: 0px 10px 10px 10px;
+      max-width: 200px;
+      word-wrap: break-word; /* Added to wrap long words */
     }
   }
 }
@@ -36,5 +38,6 @@
   background-color: white;
   padding: 10px 20px;
   border-radius: 0px 10px 10px 10px;
-  max-width: max-content;
+  max-width: 30vw;
+  word-wrap: break-word; /* Added to wrap long words */
 }
