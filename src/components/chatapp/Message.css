@@ -10,7 +10,7 @@
     }
 
     .messageContent p {
-      background-color: #833ab4;
+      background-color: #6baa75;
       padding: 10px 20px;
       border-radius: 0px 10px 10px 10px;
       max-width: 200px;
@@ -35,7 +35,7 @@
 }
 
 .messageContent p {
-  background-color: white;
+  background-color: #cb793a;
   padding: 10px 20px;
   border-radius: 0px 10px 10px 10px;
   max-width: 30vw;

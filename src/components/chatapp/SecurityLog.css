@@ -1,0 +1,60 @@
+/* .security-log-container {
+  position: absolute; 
+  bottom: 0; 
+  width: calc(100% - 10px); 
+  padding: 10px;
+  color: white;
+}
+
+.security-log {
+  height: 250px; 
+  overflow-y: auto;
+}
+
+.security-log ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.security-log li {
+  padding: 5px 0;
+  white-space: nowrap;
+} */
+
+.security-log-container {
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 20px);
+  padding: 10px;
+  color: white;
+  background-color: #212121; /* Dark background color */
+  font-family: "Courier New", Courier, monospace; /* Monospaced font */
+}
+
+.security-log {
+  height: 230px;
+  overflow-y: auto;
+}
+
+.security-log ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.security-log li {
+  padding: 5px 10px;
+  white-space: pre-line;
+  border-bottom: 1px solid #333; /* Border between log items */
+}
+
+.security-log li:last-child {
+  border-bottom: none; /* Remove border from last log item */
+}
+
+.security-log li:before {
+  content: "$"; /* Command prompt symbol */
+  color: #6b8e23; /* Color of command prompt */
+  margin-right: 5px;
+}

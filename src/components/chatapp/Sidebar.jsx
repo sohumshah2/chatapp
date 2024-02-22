@@ -3,6 +3,7 @@ import "./Sidebar.css";
 import ChatNavbar from "./ChatNavbar";
 import Chats from "./Chats";
 import AddUser from "./AddUser";
+import SecurityLog from "./SecurityLog";
 
 const Sidebar = ({
   currentUserId,
@@ -29,16 +30,7 @@ const Sidebar = ({
         setCurrentUserId={setCurrentUserId}
         setMessages={setMessages}
       />
-      <div className="security-log-container">
-        <h3>Security Log</h3>
-        <div className="security-log">
-          <ul>
-            {securityLog.map((event, index) => (
-              <li key={index}>{event}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <SecurityLog securityLog={securityLog} />
     </div>
   );
 };

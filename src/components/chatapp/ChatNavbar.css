@@ -1,7 +1,7 @@
 .chatNavbar {
   display: flex;
   align-items: center;
-  background-color: #2f2d52;
+  background-color: black;
   height: 50px;
   padding: 10px;
   justify-content: space-between;
@@ -10,6 +10,7 @@
 
 .logo {
   font-weight: bold;
+  font-size: 24px;
 }
 
 .user {

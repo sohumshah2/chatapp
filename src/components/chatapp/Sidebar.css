@@ -5,27 +5,3 @@
   height: 100%; /* Occupy full height */
   position: relative; /* Set position to relative */
 }
-
-.security-log-container {
-  position: absolute; /* Position the security log container */
-  bottom: 0; /* Align it to the bottom */
-  width: calc(100% - 10px); /* Occupy full width */
-  padding: 10px;
-  color: white; /* Set text color to white */
-}
-
-.security-log {
-  height: 250px; /* Maximum height of the security log */
-  overflow-y: auto; /* Enable scrollbar if content exceeds height */
-}
-
-.security-log ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.security-log li {
-  padding: 5px 0;
-  white-space: nowrap;
-}
