@@ -133,6 +133,7 @@ const ChatApp = () => {
               setChats((prevChats) => {
                 return prevChats.concat({
                   name: senderId,
+                  id: senderId,
                   lastMessage: msg.message,
                   rsa_e: msg.publicRSA,
                   rsa_n: msg.n,
@@ -153,7 +154,7 @@ const ChatApp = () => {
 
             // Update the last message in the chat list
             setChats((prevChats) => {
-              prevChats.find((chat) => chat.name === senderId).lastMessage =
+              prevChats.find((chat) => chat.id === senderId).lastMessage =
                 msg.message.length > 20
                   ? msg.message.slice(0, 20) + "..."
                   : msg.message;
@@ -176,6 +177,7 @@ const ChatApp = () => {
               setChats((prevChats) => {
                 return prevChats.concat({
                   name: receiverId,
+                  id: receiverId,
                   lastMessage: msg.message,
                   rsa_e: msg.publicRSA,
                   rsa_n: msg.n,
@@ -196,7 +198,7 @@ const ChatApp = () => {
 
             // Update the last message in the chat list
             setChats((prevChats) => {
-              prevChats.find((chat) => chat.name === receiverId).lastMessage =
+              prevChats.find((chat) => chat.id === receiverId).lastMessage =
                 msg.message.length > 20
                   ? msg.message.slice(0, 20) + "..."
                   : msg.message;
@@ -283,6 +285,8 @@ const ChatApp = () => {
           setCurrentUsername={setCurrentUsername}
           securityLog={securityLog}
           chats={chats}
+          setChats={setChats}
+          setMessages={setMessages}
         />
         <Chat
           className="chat"

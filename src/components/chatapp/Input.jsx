@@ -90,6 +90,8 @@ const Input = ({
         }
       );
     });
+
+    setMessageInput("");
   };
 
   // Establishes a connection with a recipient

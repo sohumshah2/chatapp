@@ -33,7 +33,32 @@
 }
 
 .userChatInfo {
+  padding-left: 10px;
   flex: 1;
   overflow-x: auto;
   white-space: nowrap;
+}
+
+.editChatNameInput {
+  font-size: 18px;
+  font-weight: 500;
+  color: white;
+  background: none;
+  border: none;
+  outline: 2px solid white;
+  margin: 5px;
+  padding: 5px;
+  border-radius: 5px;
+
+  /* 
+
+  background: none;
+  border: none;
+  border: 1px solid white;
+  outline: none;
+  width: 100%;
+  padding: 10px;
+  margin-right: 10px;
+  border-radius: 5px;
+  color: white; */
 }

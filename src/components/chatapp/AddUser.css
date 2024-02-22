@@ -1,0 +1,33 @@
+.addUser {
+  position: absolute;
+  bottom: 310px;
+  width: calc(100% - 10px);
+  padding: 10px;
+  color: rgb(255, 255, 255);
+}
+
+.inputs {
+  display: flex;
+}
+
+.input-box {
+  background: none;
+  border: none;
+  border: 1px solid white;
+  /* outline: none; */
+  width: 100%;
+  padding: 10px;
+  margin-right: 10px;
+  border-radius: 5px;
+  /* color: rgb(0, 0, 0); */
+  color: white;
+}
+
+.input-box::placeholder {
+  color: rgb(175, 175, 175);
+}
+
+.sendButton {
+  margin-right: 10px;
+  cursor: pointer;
+}
